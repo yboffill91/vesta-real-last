@@ -9,6 +9,7 @@ yarn-error.log
 /frontend/.next/
 /frontend/out/
 /frontend/build/
+/frontend/*.env.*.local
 
 # FastAPI
 /backend/__pycache__/
