@@ -3,10 +3,16 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/auth'
+import { Button } from '@/components/ui/button'
 
 export default function HomePage() {
   const router = useRouter()
-  const { user, token, checkAuth, isLoading } = useAuthStore()
+  const { user, token, checkAuth, isLoading, logout } = useAuthStore()
+  
+  const handleLogout = () => {
+    logout()
+    router.replace('/login')
+  }
   
   useEffect(() => {
     const verifyAuthentication = async () => {
@@ -44,7 +50,16 @@ export default function HomePage() {
   
   // Si está autenticado, mostrar la página principal
   return (
-    <div className="flex h-screen flex-col items-center justify-center bg-primary p-6 text-primary-foreground">
+    <div className="relative flex h-screen flex-col items-center justify-center bg-primary p-6 text-primary-foreground">
+      <div className="absolute right-4 top-4">
+        <Button 
+          variant="outline" 
+          className="bg-white/10 text-primary-foreground hover:bg-white/20" 
+          onClick={handleLogout}
+        >
+          Cerrar sesión
+        </Button>
+      </div>
       <h1 className="mb-4 text-3xl font-bold">Bienvenido a VestaSys</h1>
       <p className="mb-8 text-center text-xl">
         Sistema de Gestión Integral para Negocios Gastronómicos
