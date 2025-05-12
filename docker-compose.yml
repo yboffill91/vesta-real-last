@@ -15,6 +15,36 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - vestasys-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vestasys-backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - MYSQL_USER=${MYSQL_USER:-vestasysuser}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-vestasyspassword}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-vestasys}
+      - DB_PORT=3306
+    volumes:
+      - ./backend:/app
+      - ./backend/.db.env.docker:/app/.db.env
+    ports:
+      - "8000:8000"
+    networks:
+      - vestasys-network
+    command: >
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin

@@ -112,14 +112,30 @@ def create_admin_user(conn=None):
 def init_database():
     """
     Initialize the database by creating all required tables and initial data.
+    Uses the migration system to create all tables and seed data.
     """
     logger.info("Initializing database...")
     
-    if create_users_table():
-        logger.info("Database initialization completed successfully")
-        return True
-    else:
-        logger.error("Database initialization failed")
+    # First, ensure the Users table exists (legacy approach)
+    users_table_created = create_users_table()
+    
+    if not users_table_created:
+        logger.error("Failed to create Users table")
+        return False
+    
+    # Run migrations to create all other tables
+    try:
+        from app.db.migrate import run_migrations
+        
+        if run_migrations():
+            logger.info("Database migrations completed successfully")
+            return True
+        else:
+            logger.error("Database migrations failed")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Error running migrations: {e}")
         return False
 
 if __name__ == "__main__":

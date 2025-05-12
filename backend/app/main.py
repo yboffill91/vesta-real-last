@@ -22,7 +22,14 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=[
+        "http://localhost:3000",  # NextJS default port
+        "http://localhost",
+        "http://frontend",  # Docker service name for frontend
+        "http://frontend:3000",
+        "http://127.0.0.1",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -51,10 +58,28 @@ async def root():
 # Import and include routers
 from app.api.db_health import router as db_health_router
 from app.api.auth import router as auth_router
+from app.api.config import router as config_router
+from app.api.products import router as products_router
+from app.api.users import router as users_router
+from app.api.orders import router as orders_router
+from app.api.categories import router as categories_router
+from app.api.establishment import router as establishment_router
+from app.api.sales_areas import router as sales_areas_router
+from app.api.service_spots import router as service_spots_router
+from app.api.menus import router as menus_router
 
 # Include routers
 app.include_router(db_health_router)
 app.include_router(auth_router)
+app.include_router(config_router)
+app.include_router(products_router)
+app.include_router(users_router)
+app.include_router(orders_router)
+app.include_router(categories_router)
+app.include_router(establishment_router)
+app.include_router(sales_areas_router)
+app.include_router(service_spots_router)
+app.include_router(menus_router)
 
 # Database initialization event
 @app.on_event("startup")
