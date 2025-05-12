@@ -5,8 +5,9 @@ import { fetchApi } from './api';
 export type User = {
   id: number;
   username: string;
-  email: string;
-  role?: string;
+  name: string;
+  surname: string;
+  role: string;
 };
 
 type AuthState = {
@@ -35,24 +36,25 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       // Acciones
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
+        console.log('[AUTH] Iniciando login:', { email });
         
         try {
-          const response = await fetchApi('/api/auth/token', {
+          const response = await fetchApi('/api/v1/auth/login', {
             method: 'POST',
-            body: { email, password },
+            body: { username: email, password },
           });
           
+          console.log('[AUTH] Respuesta login:', response);
+          
           if (response && response.access_token) {
-            // Obtener información del usuario
-            const userProfile = await fetchApi('/api/users/me', {
-              token: response.access_token
-            });
-            
+            // La API ya devuelve la información del usuario, no necesitamos hacer otra llamada
             set({ 
               token: response.access_token, 
-              user: userProfile, 
+              user: response.user, // Usamos el usuario que ya viene en la respuesta
               isLoading: false 
             });
+            
+            console.log('[AUTH] Login exitoso, usuario establecido:', response.user);
           }
         } catch (error) {
           set({ 
@@ -72,18 +74,24 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       },
       
       checkAuth: async () => {
-        const { token } = get();
-        if (!token) return false;
+        const { token, user } = get();
         
-        try {
-          set({ isLoading: true });
-          const userProfile = await fetchApi('/api/users/me', { token });
-          set({ user: userProfile, isLoading: false });
+        // Si ya tenemos token y usuario, consideramos que ya estamos autenticados
+        if (token && user) {
+          console.log('[AUTH] Sesión válida encontrada:', { userId: user.id });
           return true;
-        } catch (error) {
-          set({ user: null, token: null, isLoading: false });
+        }
+        
+        // Si solo tenemos token pero no usuario, probablemente la sesión no es válida
+        if (token && !user) {
+          console.log('[AUTH] Token encontrado pero sin datos de usuario');
+          set({ token: null, isLoading: false });
           return false;
         }
+        
+        // Si no tenemos token, claramente no estamos autenticados
+        console.log('[AUTH] No hay sesión activa');
+        return false;
       }
     }),
     {

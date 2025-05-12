@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-
+import { AuthProvider } from "@/contexts/AuthProvider";
 
 export const metadata: Metadata = {
   title: "TecnoTics SRL. Vesta System",
@@ -13,9 +13,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        {children}
+    <html lang="es">
+      <body className="min-h-screen antialiased">
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

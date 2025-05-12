@@ -68,7 +68,7 @@ export function Slide({ slide, direction }: SlideProps) {
         animate="visible"
         variants={textVariants}
       >
-        <div className="max-w-md p-6 text-center text-primary-foreground bg-primary rounded-lg shadow border">
+        <div className="max-w-md p-6 text-center text-primary-foreground bg-primary/80 backdrop-blur-sm rounded-lg shadow border">
           <motion.h2
             className="mb-2 text-3xl font-bold"
             initial={{ opacity: 0, y: -20 }}

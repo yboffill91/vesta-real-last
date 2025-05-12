@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS Users (
     role ENUM('Soporte', 'Administrador', 'Dependiente') NOT NULL
 );
 
--- Insertar un usuario administrador por defecto si no existe ninguno
+-- Insertar un usuario de soporte por defecto si no existe ninguno
 INSERT INTO Users (name, surname, username, password, role)
-SELECT 'Admin', 'Sistema', 'admin', '$2b$12$TZ0mGWZvGz1Ic9GQ3s6wLOIU4N5LZ4rAi9zNxIJ0.xZOu0zG1jCIy', 'Administrador'
-WHERE NOT EXISTS (SELECT 1 FROM Users WHERE username = 'admin');
+SELECT 'Soporte', 'Tecnico', 'soporte', '$2b$12$A/.OMCnZv0UPl3Jcq4FTsO1jl5w/gcrUuITTHRNHJINfqWYPshgym', 'Soporte'
+WHERE NOT EXISTS (SELECT 1 FROM Users WHERE username = 'soporte');

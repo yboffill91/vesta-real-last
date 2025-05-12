@@ -7,8 +7,9 @@ import { fetchApi } from './api';
 export type User = {
   id: number;
   username: string;
-  email: string;
-  role?: string;
+  name: string;
+  surname: string;
+  role: string;
 };
 
 export type Menu = {
@@ -41,13 +42,23 @@ export type Order = {
 export const apiClient = {
   // Autenticación
   auth: {
-    login: (email: string, password: string) => 
-      fetchApi<{ access_token: string }>('/api/auth/token', { 
+    login: (email: string, password: string) => {
+      console.log('Intentando login con:', { username: email });
+      return fetchApi<{ access_token: string, token_type: string, user: User }>('/api/v1/auth/login', { 
         method: 'POST', 
-        body: { email, password } 
-      }),
-    me: (token: string) => 
-      fetchApi<User>('/api/users/me', { token }),
+        body: { username: email, password } 
+      }).then(response => {
+        console.log('Respuesta de login:', response);
+        return response;
+      }).catch(error => {
+        console.error('Error en login:', error);
+        throw error;
+      });
+    },
+    me: (token: string) => {
+      console.log('Solicitando perfil de usuario');
+      return fetchApi<User>('/api/v1/users/me', { token });
+    },
   },
   
   // Usuarios
