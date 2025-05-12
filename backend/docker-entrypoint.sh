@@ -43,6 +43,11 @@ exit(1)
 echo "Running database migrations..."
 python run_migrations.py
 
+# Ejecutar procedimientos almacenados
+echo "Running stored procedures..."
+chmod +x /app/run_stored_procs.sh
+/app/run_stored_procs.sh
+
 # Inicializar la base de datos
 echo "Initializing database..."
 python -m app.db.init_db
