@@ -10,6 +10,7 @@ import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Button, FormField, AnimatedInput } from "@/components"
 import { useAuthStore } from "@/lib/auth"
+import { SystemAlert } from "@/components/system-alert"
 
 // Esquema de validación
 const loginSchema = z.object({
@@ -50,6 +51,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const router = useRouter()
   const { login } = useAuthStore()
   const [authError, setAuthError] = useState<string | null>(null)
+  const [showErrorAlert, setShowErrorAlert] = useState(false)
 
   const {
     register,
@@ -64,25 +66,37 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     try {
       setAuthError(null)
       // Usar el store de autenticación para iniciar sesión
+      // La redirección la maneja el store de autenticación según la respuesta del servidor
       await login(data.username, data.password)
       
-      // Si la autenticación es exitosa, redirigir al dashboard
+      // No redirigimos aquí, la redirección la maneja el store auth.ts
       router.push('/')
     } catch (error) {
-      // Mostrar mensaje de error con alert (temporal)
+      // Mostrar mensaje de error con nuestro componente SystemAlert
       const message = error instanceof Error ? error.message : 'Error durante la autenticación'
       setAuthError(message)
-      alert(`Error de autenticación: ${message}`)
+      setShowErrorAlert(true)
       console.error('Error de autenticación:', error)
     }
   }
 
   return (
-    <form
-      className={cn("flex flex-col gap-6", className)}
-      onSubmit={handleSubmit(onSubmit)}
-      {...props}
-    >
+    <>
+      {/* SystemAlert para mostrar errores de autenticación */}
+      <SystemAlert
+        open={showErrorAlert}
+        setOpen={setShowErrorAlert}
+        title="Error de autenticación"
+        description={authError || 'Ha ocurrido un error al intentar iniciar sesión'}
+        confirmText="Aceptar"
+        variant="destructive"
+      />
+      
+      <form
+        className={cn("flex flex-col gap-6", className)}
+        onSubmit={handleSubmit(onSubmit)}
+        {...props}
+      >
       <motion.div className="flex flex-col items-center gap-2 text-center" variants={itemVariants}>
         <motion.h1
           className="text-2xl font-bold"
@@ -106,14 +120,14 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           <AnimatedInput
             id="username"
             type="text"
-            placeholder="usuario123"
+            placeholder="usuario"
             error={errors.username?.message}
             {...register("username")}
           />
         </FormField>
 
         <FormField label="Contraseña" htmlFor="password" error={errors.password?.message}>
-          <AnimatedInput id="password" type="password" error={errors.password?.message} {...register("password")} />
+          <AnimatedInput id="password" type="password" error={errors.password?.message} placeholder="********" {...register("password")} />
         </FormField>
 
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -123,5 +137,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         </motion.div>
       </motion.div>
     </form>
+    </>
   )
 }

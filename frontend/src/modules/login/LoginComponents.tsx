@@ -1,5 +1,6 @@
 "use client"
 
+import { ThemeToggle } from "@/components/ThemeToggle"
 import { ImageSlider, LoginForm } from "@/modules/login/components"
 import { motion } from "framer-motion"
 import Image from "next/image"
@@ -8,15 +9,19 @@ import Link from "next/link"
 export default function LoginComponents() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col items-center justify-center gap-4 p-6 md:p-10 h-full">
+      <div className="flex flex-col items-center justify-center gap-4 p-6 md:p-10 h-full ">
         <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="flex flex-col items-center justify-center border gap-4 p-6 rounded-lg bg-muted">
+        className="relative flex flex-col items-center justify-center border gap-4 p-6 rounded-lg bg-muted">
+        <span className="absolute top-0 right-0">
+
+        <ThemeToggle/>
+        </span>
 
         <motion.div
-          className="flex justify-center gap-2 bg-primary items-center px-2 py-1 text-primary-foreground rounded-lg"
+          className="bg-primary pe-4 rounded-full text-primary-foreground ps-px py-px"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -43,6 +48,11 @@ export default function LoginComponents() {
           <div className="w-full max-w-xs">
             <LoginForm />
           </div>
+         
+          
+        </div>
+        <div>
+          <p className="text-center text-[0.7rem] text-muted-foreground">Tecnotics Soluciones Integrales. Matanzas Cuba</p>
         </div>
       </motion.div>
               </div>
