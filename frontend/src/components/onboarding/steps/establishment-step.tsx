@@ -12,7 +12,7 @@ import { SystemAlert } from '@/components/system-alert'
 import { useOnboardingStore } from '@/stores/onboarding-store'
 import { establishmentSchema, EstablishmentFormValues } from '@/lib/schema/establishment'
 import { Check } from 'lucide-react'
-
+import { useRouter } from 'next/navigation'
 
 
 interface EstablishmentStepProps {
@@ -20,59 +20,75 @@ interface EstablishmentStepProps {
 }
 
 export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
-  const { setCurrentStep } = useOnboardingStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showErrorAlert, setShowErrorAlert] = useState(false)
-
   const [success, setSuccess] = useState(false)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+
   const form = useForm<EstablishmentFormValues>({
-    resolver: zodResolver(establishmentSchema),
     mode: 'onBlur',
-    defaultValues: {
-      name: '',
-      legal_name: '',
-      tax_id: '',
-      address: '',
-      phone: '',
-      email: '',
-      website: '',
-      logo: ''
-    }
+    
   })
 
-  const onSubmit = async (data: EstablishmentFormValues) => {
-    setIsSubmitting(true)
-    setError(null)
-
-    try {
-      // Call API to create establishment
-      await fetchApi('/api/v1/establishment/create', {
-        method: 'POST',
-        body: {
-          name: data.name,
-          legal_name: data.legal_name,
-          tax_id: data.tax_id,
-          address: data.address,
-          phone: data.phone,
-          email: data.email,
-          website: data.website,
-          logo: data.logo
-        }
-      })
-      setSuccess(true)
-      setTimeout(() => {
-        onComplete()
-      }, 1000)
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Error al crear la configuración del establecimiento'
-      setError(errorMessage)
-      setShowErrorAlert(true)
-      console.error('Error creating establishment:', err)
-    } finally {
-      setIsSubmitting(false)
+  // Maneja la carga y almacenamiento local del logo
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('El logo debe ser una imagen JPEG, PNG o WEBP');
+      setShowErrorAlert(true);
+      form.setValue('logo', '');
+      setLogoPreview(null);
+      return;
     }
+    // Guardar el archivo en /public/logos
+    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+    const publicPath = `/logos/${fileName}`;
+    // Usar FileReader para preview
+    const reader = new FileReader();
+    reader.onload = () => setLogoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+    // No hay API para guardar en public desde frontend puro, así que se asume que el backend debe aceptar multipart o bien se simula el guardado (solo ruta)
+    form.setValue('logo', publicPath);
+    // Si quieres realmente subir el archivo, deberías hacerlo aquí con un endpoint de subida
+  };
+
+  const router = useRouter();
+
+  const onSubmit = async (data: EstablishmentFormValues) => {
+    setIsSubmitting(true);
+    setError(null);
+    setShowErrorAlert(false);
+
+    const response = await fetchApi('/api/v1/establishment/', {
+      method: 'POST',
+      body: {
+        name: data.name,
+        address: data.address,
+        phone: data.phone,
+        logo: data.logo,
+        tax_rate: data.tax_rate,
+        currency: data.currency,
+        is_configured: false
+      }
+    });
+
+    if (response.success) {
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/');
+        onComplete();
+      }, 1000);
+    } else {
+      setError(response.error || 'No se pudo crear la configuración del establecimiento.');
+      setShowErrorAlert(true);
+    }
+    setIsSubmitting(false);
   }
+
+  const { setCurrentStep } = useOnboardingStore()
 
   return (
     <div className="space-y-6">
@@ -97,7 +113,7 @@ export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
@@ -106,43 +122,12 @@ export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
                 <FormItem>
                   <FormLabel>Nombre Comercial</FormLabel>
                   <FormControl>
-                    <Input placeholder="Restaurante El Buen Sabor" {...field} />
+                    <Input placeholder="Ej: Restaurante El Buen Sabor" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="legal_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Razón Social</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Empresa S.R.L." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="tax_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>RNC / Identificación Fiscal</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123456789" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="phone"
@@ -150,7 +135,7 @@ export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
                 <FormItem>
                   <FormLabel>Teléfono</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1 809-555-1234" {...field} />
+                    <Input placeholder="Ej: +53 55555555" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -165,42 +150,68 @@ export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
               <FormItem>
                 <FormLabel>Dirección</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Av. Principal #123, Ciudad" {...field} />
+                  <Textarea placeholder="Ej: Av. Principal #123, Ciudad" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 items-end">
             <FormField
               control={form.control}
-              name="email"
+              name="logo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Correo Electrónico (Opcional)</FormLabel>
+                  <FormLabel>Logo del Establecimiento</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="info@ejemplo.com" {...field} />
+                    <Input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleLogoChange}
+                    />
                   </FormControl>
+                  {logoPreview && (
+                    <div className="mt-2">
+                      <img src={logoPreview} alt="Vista previa del logo" className="max-h-20 rounded border" />
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sitio Web (Opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://www.ejemplo.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="flex flex-col gap-2">
+              <FormField
+                control={form.control}
+                name="tax_rate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Impuesto (%)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min={0} step={0.01} {...field} defaultValue={0} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Moneda</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value} disabled />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
+
+          {/* Campo oculto para is_configured */}
+          <input type="hidden" {...form.register('is_configured')} value="false" />
 
           <Button type="submit" className="w-full" disabled={isSubmitting || !form.formState.isValid}>
             {isSubmitting ? 'Guardando configuración...' : 'Guardar Configuración del Establecimiento'}

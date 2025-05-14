@@ -54,7 +54,7 @@ async def get_establishment(
         phone=db_establishment['phone'],
         tax_rate=db_establishment['tax_rate'],
         currency=db_establishment['currency'],
-        logo_url=db_establishment['logo_url'],
+        logo_url=db_establishment['logo'],
         created_at=db_establishment.get('created_at'),
         updated_at=db_establishment.get('updated_at')
     )

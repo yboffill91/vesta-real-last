@@ -7,7 +7,7 @@ import { useOnboardingStore } from '@/stores/onboarding-store'
 import { Progress } from '@/components/ui/progress'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import { ChevronLeft, Check } from 'lucide-react'
 
 // Import step components
 import { AdminUserStep, EstablishmentStep } from './steps'
@@ -20,7 +20,7 @@ const steps = [
 
 export function OnboardingWizard() {
   const router = useRouter()
-  const { currentStep, setCurrentStep, needsSetup, hasAdminUser, hasEstablishmentConfig } = useOnboardingStore()
+  const { currentStep, setCurrentStep,  isLoading, checkOnboardingStatus } = useOnboardingStore()
   const [progress, setProgress] = useState(0)
 
   // Update progress based on current step
@@ -28,6 +28,11 @@ export function OnboardingWizard() {
     const currentProgress = (currentStep / steps.length) * 100
     setProgress(currentProgress)
   }, [currentStep])
+
+  // Chequear el estado real del sistema al montar el wizard
+  useEffect(() => {
+    checkOnboardingStatus()
+  }, [])
 
   const StepComponent = steps[currentStep].id === 1 ? AdminUserStep : EstablishmentStep
 
@@ -39,6 +44,14 @@ export function OnboardingWizard() {
       // Reset onboarding state and navigate to dashboard
       router.replace('/dashboard')
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <span className="text-lg font-medium">Cargando estado de configuración...</span>
+      </div>
+    )
   }
 
   return (

@@ -58,6 +58,13 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Solo 'Administrador' o 'Soporte' pueden acceder a /dashboard y subrutas
+  if (pathname.startsWith('/dashboard')) {
+    if (userRole !== 'Administrador' && userRole !== 'Soporte') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
   // Si está autenticado y tiene los permisos correctos, permitir acceso
   return NextResponse.next();
 }

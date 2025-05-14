@@ -36,7 +36,7 @@ export function getAuthToken(): string | undefined {
   }
 }
 
-export async function fetchApi<T = any>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+export async function fetchApi<T = any>(endpoint: string, options: FetchOptions = {}): Promise<{ success: boolean; data?: T; error?: string; status?: number }> {
   // Concatenar la URL base si es necesario
   const baseUrl = endpoint.startsWith('http')
     ? endpoint
@@ -89,37 +89,43 @@ export async function fetchApi<T = any>(endpoint: string, options: FetchOptions 
   
   try {
     const response = await fetch(url, config);
-    
-    // Manejar errores HTTP
+
+    // Si la respuesta es 204 No Content, retorna success true sin data
+    if (response.status === 204) {
+      return { success: true, data: undefined, status: 204 };
+    }
+    // Si la respuesta es 201 Created o 200 OK pero no hay body, retorna success true sin data
+    const text = await response.text();
+    if (!text) {
+      return { success: true, data: undefined, status: response.status };
+    }
+    // Intenta parsear el JSON
+    let data: T;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      return { success: false, error: 'Respuesta inválida del servidor', status: response.status };
+    }
+    // Si status HTTP no es ok, retorna error pero sin lanzar excepción
     if (!response.ok) {
-      let errorData: ApiError;
-      try {
-        errorData = await response.json();
-      } catch (err) {
-        // Si no se puede parsear la respuesta como JSON
-        errorData = {
-          detail: `Error ${response.status}: ${response.statusText}`,
-          status: response.status
-        };
+      let errorMsg = `Error ${response.status}`;
+      if (data && typeof data === 'object') {
+        if ('detail' in data && typeof (data as any).detail === 'string') {
+          errorMsg = (data as any).detail;
+        } else if ('message' in data && typeof (data as any).message === 'string') {
+          errorMsg = (data as any).message;
+        }
       }
-      
-      const error = new Error(errorData.detail || 'Error en la petición a la API');
-      (error as any).status = response.status;
-      (error as any).data = errorData;
-      throw error;
+      return { success: false, error: errorMsg, status: response.status, data };
     }
-    
-    // Devolver los datos si todo está bien
-    if (response.status !== 204) { // No Content
-      return await response.json() as T;
-    }
-    
-    return {} as T;
+    // Éxito
+    return { success: true, data, status: response.status };
   } catch (error) {
-    // Capturar errores de red u otros no relacionados con la respuesta HTTP
-    if (!(error instanceof Error)) {
-      throw new Error('Error de conexión');
+    // Error de red u otro
+    let msg = 'Error de conexión';
+    if (error instanceof Error) {
+      msg = error.message;
     }
-    throw error;
+    return { success: false, error: msg };
   }
 }

@@ -65,33 +65,29 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   })
 
   const onSubmit = async (data: LoginFormValues) => {
-    try {
-      setAuthError(null)
-      // Iniciar sesión
-      await login(data.username, data.password)
+    setAuthError(null);
+    setShowErrorAlert(false);
+    setOnboardingLoading(false);
 
-      // Obtener el usuario actualizado tras login
-      const { user } = useAuthStore.getState();
-      if (user?.role === "Soporte") {
-        setOnboardingLoading(true)
-        // Chequear si necesita setup
-        const onboarding = await onboardingService.checkOnboardingStatus();
-        setOnboardingLoading(false)
-        if (onboarding.needsSetup) {
-          router.replace("/setup");
-          return;
-        }
-      }
-      // Para otros roles o si no necesita setup
-      router.replace("/");
-    } catch (error) {
-      setOnboardingLoading(false)
-      // Mostrar mensaje de error con nuestro componente SystemAlert
-      const message = error instanceof Error ? error.message : 'Error durante la autenticación'
-      setAuthError(message)
-      setShowErrorAlert(true)
-      console.error('Error de autenticación:', error)
+    await login(data.username, data.password);
+
+    const { user, error } = useAuthStore.getState();
+    if (error) {
+      setAuthError(error);
+      setShowErrorAlert(true);
+      return;
     }
+
+    if (user?.role === "Soporte") {
+      setOnboardingLoading(true);
+      const onboarding = await onboardingService.checkOnboardingStatus();
+      setOnboardingLoading(false);
+      if (onboarding.needsSetup) {
+        router.replace("/setup");
+        return;
+      }
+    }
+    router.replace("/");
   }
 
   return (

@@ -38,33 +38,30 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         console.log('[AUTH] Iniciando login:', { email });
-        
-        try {
-          const response = await fetchApi('/api/v1/auth/login', {
-            method: 'POST',
-            body: { username: email, password },
+
+        const response = await fetchApi('/api/v1/auth/login', {
+          method: 'POST',
+          body: { username: email, password },
+        });
+
+        console.log('[AUTH] Respuesta login:', response);
+
+        if (response.success && response.data && response.data.access_token) {
+          // Guardar el token en cookie para el middleware
+          Cookies.set('auth_token', response.data.access_token, { path: '/' });
+          set({
+            token: response.data.access_token,
+            user: response.data.user,
+            isLoading: false,
+            error: null,
           });
-          
-          console.log('[AUTH] Respuesta login:', response);
-          
-          if (response && response.access_token) {
-            // Guardar el token en cookie para el middleware
-            Cookies.set('auth_token', response.access_token, { path: '/'});
-            // La API ya devuelve la información del usuario, no necesitamos hacer otra llamada
-            set({ 
-              token: response.access_token, 
-              user: response.user, // Usamos el usuario que ya viene en la respuesta
-              isLoading: false 
-            });
-            
-            console.log('[AUTH] Login exitoso, usuario establecido:', response.user);
-          }
-        } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Error durante la autenticación', 
-            isLoading: false 
+          console.log('[AUTH] Login exitoso, usuario establecido:', response.data.user);
+        } else {
+          set({
+            error: response.error || 'Error durante la autenticación',
+            isLoading: false,
           });
-          throw error;
+          throw new Error(response.error || 'Error durante la autenticación');
         }
       },
       

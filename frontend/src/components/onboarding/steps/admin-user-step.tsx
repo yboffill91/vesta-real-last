@@ -45,7 +45,7 @@ export function AdminUserStep({ onComplete }: AdminUserStepProps) {
       
      
      
-      await fetchApi('/api/v1/users/', {
+      const response = await fetchApi('/api/v1/users/', {
         method: 'POST',
         body: {
           name: data.first_name,
@@ -54,17 +54,17 @@ export function AdminUserStep({ onComplete }: AdminUserStepProps) {
           password: data.password,
           role: 'Administrador'
         },
-      })
+      });
 
-      setSuccess(true)
-      setTimeout(() => {
-        onComplete()
-      }, 1000)
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Error al crear el usuario administrador'
-      setError(errorMessage)
-      setShowErrorAlert(true)
-      console.error('Error creating admin user:', err)
+      if (response.success) {
+        setSuccess(true);
+        setTimeout(() => {
+          onComplete();
+        }, 1000);
+      } else {
+        setError(response.error || 'No se pudo crear el usuario.');
+        setShowErrorAlert(true);
+      }
     } finally {
       setIsSubmitting(false)
     }
