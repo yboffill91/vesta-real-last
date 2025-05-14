@@ -11,20 +11,21 @@ import { cn } from "@/lib/utils"
 import { Button, FormField, AnimatedInput } from "@/components"
 import { useAuthStore } from "@/lib/auth"
 import { SystemAlert } from "@/components/system-alert"
+import { onboardingService } from "@/services/onboarding"
+import { Loader } from "@/components/ui/loader"
 
 // Esquema de validación
 const loginSchema = z.object({
   username: z
     .string()
     .min(4, "El nombre de usuario debe tener al menos 4 caracteres")
-    .regex(/^[a-zA-Z0-9_@.]+$/, "Solo se permiten letras, números, guiones bajos, @ y ."),
+    .regex(/^[a-zA-Z0-9_.]+$/, "Solo se permiten letras, números, guiones bajos, puntos y guiones"),
   password: z
     .string()
-    .min(6, "La contraseña debe tener al menos 6 caracteres"),
-    // Las validaciones de mayúsculas/minúsculas/números son opcionales para desarrollo
-    // .regex(/[A-Z]/, "Debe contener al menos una letra mayúscula")
-    // .regex(/[a-z]/, "Debe contener al menos una letra minúscula")
-    // .regex(/[0-9]/, "Debe contener al menos un número"),
+    .min(6, "La contraseña debe tener al menos 6 caracteres")
+    .regex(/[A-Z]/, "Debe contener al menos una letra mayúscula")
+    .regex(/[a-z]/, "Debe contener al menos una letra minúscula")
+    .regex(/[0-9]/, "Debe contener al menos un número"),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -49,9 +50,10 @@ const itemVariants = {
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"form">) {
   const router = useRouter()
-  const { login } = useAuthStore()
+  const { login, isLoading } = useAuthStore()
   const [authError, setAuthError] = useState<string | null>(null)
   const [showErrorAlert, setShowErrorAlert] = useState(false)
+  const [onboardingLoading, setOnboardingLoading] = useState(false)
 
   const {
     register,
@@ -65,13 +67,25 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const onSubmit = async (data: LoginFormValues) => {
     try {
       setAuthError(null)
-      // Usar el store de autenticación para iniciar sesión
-      // La redirección la maneja el store de autenticación según la respuesta del servidor
+      // Iniciar sesión
       await login(data.username, data.password)
-      
-      // No redirigimos aquí, la redirección la maneja el store auth.ts
-      router.push('/')
+
+      // Obtener el usuario actualizado tras login
+      const { user } = useAuthStore.getState();
+      if (user?.role === "Soporte") {
+        setOnboardingLoading(true)
+        // Chequear si necesita setup
+        const onboarding = await onboardingService.checkOnboardingStatus();
+        setOnboardingLoading(false)
+        if (onboarding.needsSetup) {
+          router.replace("/setup");
+          return;
+        }
+      }
+      // Para otros roles o si no necesita setup
+      router.replace("/");
     } catch (error) {
+      setOnboardingLoading(false)
       // Mostrar mensaje de error con nuestro componente SystemAlert
       const message = error instanceof Error ? error.message : 'Error durante la autenticación'
       setAuthError(message)
@@ -82,6 +96,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
   return (
     <>
+      {(isLoading || onboardingLoading) && <Loader message="Comprobando acceso..." />}
       {/* SystemAlert para mostrar errores de autenticación */}
       <SystemAlert
         open={showErrorAlert}

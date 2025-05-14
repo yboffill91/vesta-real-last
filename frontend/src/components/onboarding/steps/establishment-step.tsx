@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { fetchApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,20 +10,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { SystemAlert } from '@/components/system-alert'
 import { useOnboardingStore } from '@/stores/onboarding-store'
+import { establishmentSchema, EstablishmentFormValues } from '@/lib/schema/establishment'
+import { Check } from 'lucide-react'
 
-// Form validation schema
-const establishmentSchema = z.object({
-  name: z.string().min(3, 'El nombre del establecimiento debe tener al menos 3 caracteres'),
-  legalName: z.string().min(3, 'La razón social debe tener al menos 3 caracteres'),
-  taxId: z.string().min(5, 'El RNC/Identificación fiscal debe tener al menos 5 caracteres'),
-  address: z.string().min(5, 'La dirección debe tener al menos 5 caracteres'),
-  phone: z.string().min(10, 'El teléfono debe tener al menos 10 caracteres'),
-  email: z.string().email('Ingrese un correo electrónico válido').optional().or(z.literal('')),
-  website: z.string().url('Ingrese una URL válida').optional().or(z.literal('')),
-  logo: z.string().optional()
-})
 
-type EstablishmentFormValues = z.infer<typeof establishmentSchema>
 
 interface EstablishmentStepProps {
   onComplete: () => void
@@ -36,12 +25,14 @@ export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
   const [error, setError] = useState<string | null>(null)
   const [showErrorAlert, setShowErrorAlert] = useState(false)
 
+  const [success, setSuccess] = useState(false)
   const form = useForm<EstablishmentFormValues>({
     resolver: zodResolver(establishmentSchema),
+    mode: 'onBlur',
     defaultValues: {
       name: '',
-      legalName: '',
-      taxId: '',
+      legal_name: '',
+      tax_id: '',
       address: '',
       phone: '',
       email: '',
@@ -56,10 +47,23 @@ export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
 
     try {
       // Call API to create establishment
-      await fetchApi('/api/v1/establishment/create', { method: 'POST', body: data })
-
-      // Move to next step
-      onComplete()
+      await fetchApi('/api/v1/establishment/create', {
+        method: 'POST',
+        body: {
+          name: data.name,
+          legal_name: data.legal_name,
+          tax_id: data.tax_id,
+          address: data.address,
+          phone: data.phone,
+          email: data.email,
+          website: data.website,
+          logo: data.logo
+        }
+      })
+      setSuccess(true)
+      setTimeout(() => {
+        onComplete()
+      }, 1000)
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Error al crear la configuración del establecimiento'
       setError(errorMessage)
@@ -82,7 +86,10 @@ export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
       />
 
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">Configuración del Establecimiento</h3>
+        <h3 className="text-lg font-medium flex items-center gap-2">
+          Configuración del Establecimiento
+          {success && <Check className="text-green-500 w-6 h-6 animate-bounce" />}
+        </h3>
         <p className="text-sm text-muted-foreground">
           Ingrese la información de su establecimiento. Estos datos serán usados en los
           comprobantes, facturas y reportes del sistema.
@@ -108,7 +115,7 @@ export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
 
             <FormField
               control={form.control}
-              name="legalName"
+              name="legal_name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Razón Social</FormLabel>
@@ -124,7 +131,7 @@ export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
-              name="taxId"
+              name="tax_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>RNC / Identificación Fiscal</FormLabel>
@@ -195,7 +202,7 @@ export function EstablishmentStep({ onComplete }: EstablishmentStepProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" disabled={isSubmitting || !form.formState.isValid}>
             {isSubmitting ? 'Guardando configuración...' : 'Guardar Configuración del Establecimiento'}
           </Button>
         </form>

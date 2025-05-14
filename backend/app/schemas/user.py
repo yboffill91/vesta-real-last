@@ -2,7 +2,7 @@
 User schemas for API request and response validation
 """
 from typing import Optional, List
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field
 from app.schemas.base import IDModel, TimeStampMixin, ResponseBase
 
 class UserBase(BaseModel):

@@ -4,7 +4,7 @@ User model representing system users.
 from typing import Dict, Any, Optional, List
 from app.models.base import BaseModel
 from app.utils.security import verify_password
-
+from app.db.db_connect import get_connection
 class User(BaseModel):
     """Model for system users"""
     
@@ -26,7 +26,7 @@ class User(BaseModel):
         Returns:
             dict: User data or None if not found
         """
-        conn = cls.get_connection()
+        conn = get_connection()
         if not conn:
             return None
             

@@ -10,13 +10,12 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
 
 // Import step components
-import { AdminUserStep, EstablishmentStep, ConfirmationStep } from './steps'
+import { AdminUserStep, EstablishmentStep } from './steps'
 
 // Step configuration
 const steps = [
   { id: 1, title: 'Crear Usuario Administrador' },
-  { id: 2, title: 'Configurar Establecimiento' },
-  { id: 3, title: 'Confirmación' }
+  { id: 2, title: 'Configurar Establecimiento' }
 ]
 
 export function OnboardingWizard() {
@@ -30,37 +29,15 @@ export function OnboardingWizard() {
     setProgress(currentProgress)
   }, [currentStep])
 
-  // Handle next step
-  const handleNext = () => {
-    if (currentStep < steps.length) {
+  const StepComponent = steps[currentStep].id === 1 ? AdminUserStep : EstablishmentStep
+
+  // El submit de cada step debe llamar a esta función para avanzar
+  const handleCompleteStep = () => {
+    if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
-    }
-  }
-
-  // Handle previous step
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
-
-  // Handle wizard completion
-  const handleComplete = () => {
-    // Reset onboarding state and navigate to dashboard
-    router.replace('/dashboard')
-  }
-
-  // Render the current step content
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return <AdminUserStep onComplete={handleNext} />
-      case 2:
-        return <EstablishmentStep onComplete={handleNext} />
-      case 3:
-        return <ConfirmationStep onComplete={handleComplete} />
-      default:
-        return null
+    } else {
+      // Reset onboarding state and navigate to dashboard
+      router.replace('/dashboard')
     }
   }
 
@@ -74,16 +51,17 @@ export function OnboardingWizard() {
           <div className="mt-4">
             <Progress value={progress} className="h-2" />
             <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-              {steps.map((step) => (
-                <div key={step.id} className={`flex items-center ${currentStep >= step.id ? 'text-primary' : ''}`}>
-                  <div className={`flex items-center justify-center w-6 h-6 rounded-full mr-2 ${currentStep > step.id ? 'bg-primary text-white' : currentStep === step.id ? 'border-2 border-primary' : 'border-2 border-muted'}`}>
-                    {currentStep > step.id ? (
-                      <Check className="w-4 h-4" />
+              {steps.map((step, idx) => (
+                <div key={step.title} className={`flex items-center ${currentStep >= idx ? 'text-primary' : ''}`}>
+                  <div className={`flex items-center justify-center w-6 h-6 rounded-full mr-2 ${currentStep > idx ? 'bg-primary text-white' : currentStep === idx ? 'border-2 border-primary' : 'border-2 border-muted'}`}>
+                    {/* Paloma verde si el step está completo */}
+                    {currentStep > idx ? (
+                      <Check className="w-4 h-4 text-green-500" />
                     ) : (
-                      <span>{step.id}</span>
+                      <span>{idx + 1}</span>
                     )}
                   </div>
-                  <span className={`hidden sm:inline ${currentStep >= step.id ? 'font-medium' : ''}`}>
+                  <span className={`hidden sm:inline ${currentStep >= idx ? 'font-medium' : ''}`}>
                     {step.title}
                   </span>
                 </div>
@@ -102,29 +80,20 @@ export function OnboardingWizard() {
               transition={{ duration: 0.3 }}
               className="min-h-[300px]"
             >
-              {renderStepContent()}
+              <StepComponent onComplete={handleCompleteStep} />
             </motion.div>
           </AnimatePresence>
         </CardContent>
 
         <CardFooter className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 1}
-            className="flex items-center"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Anterior
-          </Button>
-
-          {currentStep < steps.length ? (
-            <Button onClick={handleNext} className="flex items-center">
-              Siguiente
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-          ) : (
-            <Button onClick={handleComplete} className="flex items-center">
+          {currentStep > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => setCurrentStep(currentStep - 1)}
+              className="flex items-center"
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Anterior
               Completar
               <Check className="w-4 h-4 ml-2" />
             </Button>

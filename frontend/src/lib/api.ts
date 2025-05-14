@@ -24,7 +24,24 @@ export type FetchOptions = {
  * @param options Opciones de la petición
  * @returns Datos de la respuesta, parseados como JSON
  */
+export function getAuthToken(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const authStorage = localStorage.getItem('vestasys-auth-storage');
+  if (!authStorage) return undefined;
+  try {
+    const { state } = JSON.parse(authStorage);
+    return state?.token;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function fetchApi<T = any>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+  // Concatenar la URL base si es necesario
+  const baseUrl = endpoint.startsWith('http')
+    ? endpoint
+    : `${API_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+
   const { 
     method = 'GET', 
     body, 
@@ -38,24 +55,26 @@ export async function fetchApi<T = any>(endpoint: string, options: FetchOptions 
     ...options.headers,
   };
   
-  // Agregar token de autenticación si existe
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  // Agregar token de autenticación si existe, o usar el token por defecto
+  const authToken = token || getAuthToken();
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
   }
   
-  // Construir URL con query params
-  let url = `${API_URL}${endpoint}`;
+  // Construir URL con query params si existen
   const queryParams = new URLSearchParams();
-  
   Object.entries(query).forEach(([key, value]) => {
     if (value) queryParams.append(key, value);
   });
-  
   const queryString = queryParams.toString();
-  if (queryString) {
-    url = `${url}?${queryString}`;
+  const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+
+  // Logger para depuración
+  if (typeof window !== 'undefined') {
+    // Solo log en cliente
+    console.log('[fetchApi] URL:', url, 'Method:', method, 'Body:', body);
   }
-  
+
   // Configuración de la petición
   const config: RequestInit = {
     method,
@@ -63,7 +82,7 @@ export async function fetchApi<T = any>(endpoint: string, options: FetchOptions 
     credentials: 'include',
   };
   
-  // Agregar body si existe
+  // Agregar body si existe y no es GET
   if (body && method !== 'GET') {
     config.body = JSON.stringify(body);
   }
