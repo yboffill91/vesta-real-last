@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { fetchApi } from './api';
+import Cookies from 'js-cookie';
 
 export type User = {
   id: number;
@@ -47,6 +48,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           console.log('[AUTH] Respuesta login:', response);
           
           if (response && response.access_token) {
+            // Guardar el token en cookie para el middleware
+            Cookies.set('auth_token', response.access_token, { path: '/'});
             // La API ya devuelve la información del usuario, no necesitamos hacer otra llamada
             set({ 
               token: response.access_token, 
@@ -66,6 +69,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       },
       
       logout: () => {
+        // Eliminar la cookie del token
+        Cookies.remove('auth_token', { path: '/' });
         set({ user: null, token: null, error: null });
       },
       

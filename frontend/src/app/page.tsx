@@ -13,41 +13,6 @@ export default function HomePage() {
     logout()
     router.replace('/login')
   }
-  
-  useEffect(() => {
-    const verifyAuthentication = async () => {
-      // Si no hay token, redirigir al login
-      if (!token) {
-        router.replace('/login')
-        return
-      }
-      
-      // Si hay token pero no usuario, intentar verificar la autenticación
-      if (token && !user) {
-        try {
-          const isValid = await checkAuth()
-          if (!isValid) {
-            router.replace('/login')
-          }
-        } catch (error) {
-          console.error('Error al verificar autenticación:', error)
-          router.replace('/login')
-        }
-      }
-    }
-    
-    verifyAuthentication()
-  }, [router, token, user, checkAuth])
-  
-  // Mientras verifica, mostrar un mensaje de carga
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-lg">Cargando...</p>
-      </div>
-    )
-  }
-  
   // Si está autenticado, mostrar la página principal
   return (
     <div className="relative flex h-screen flex-col items-center justify-center bg-primary p-6 text-primary-foreground">
