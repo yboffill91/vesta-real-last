@@ -34,9 +34,17 @@ export function UserTable() {
   const [nameFilter, setNameFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   // Para eliminar usuario
-  const [deleteTarget, setDeleteTarget] = useState<null | { id: number; name: string }>();
+  const [deleteTarget, setDeleteTarget] = useState<null | {
+    id: number;
+    name: string;
+  }>();
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-  const { deleteUser, loading: deleting, error: deleteError, success: deleteSuccess } = useDeleteUser();
+  const {
+    deleteUser,
+    loading: deleting,
+    error: deleteError,
+    success: deleteSuccess,
+  } = useDeleteUser();
 
   // Mostrar alerta si hay error
   useEffect(() => {
@@ -92,7 +100,9 @@ export function UserTable() {
             ? `¿Estás seguro que deseas eliminar a "${deleteTarget.name}"? Esta acción no se puede deshacer.`
             : ""
         }
-        confirmText={deleteError ? "Cerrar" : deleting ? "Eliminando..." : "Eliminar"}
+        confirmText={
+          deleteError ? "Cerrar" : deleting ? "Eliminando..." : "Eliminar"
+        }
         cancelText={deleteError ? undefined : "Cancelar"}
         variant={deleteError ? "destructive" : "default"}
         onConfirm={async () => {
@@ -180,7 +190,12 @@ export function UserTable() {
                                 variant="destructive"
                                 size="sm"
                                 disabled={user.role === "Soporte" || deleting}
-                                onClick={() => setDeleteTarget({ id: Number(user.id), name: user.name + ' ' + user.surname })}
+                                onClick={() =>
+                                  setDeleteTarget({
+                                    id: Number(user.id),
+                                    name: user.name + " " + user.surname,
+                                  })
+                                }
                               >
                                 {deleting && deleteTarget?.id === user.id ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />

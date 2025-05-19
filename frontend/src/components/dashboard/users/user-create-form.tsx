@@ -60,7 +60,14 @@ export function UserCreateForm({ onSuccess }: { onSuccess?: () => void }) {
     resolver: zodResolver(userSchema),
     mode: "onBlur",
   });
-  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, watch, reset } = methods;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    reset,
+  } = methods;
 
   const onSubmit = async (data: UserFormValues) => {
     setServerError(null);
@@ -119,7 +126,6 @@ export function UserCreateForm({ onSuccess }: { onSuccess?: () => void }) {
         subtitle="Complete los datos para crear un nuevo usuario"
       >
         <Form {...methods}>
-
           <form
             className="flex flex-col gap-6"
             onSubmit={handleSubmit(onSubmit)}
@@ -178,7 +184,6 @@ export function UserCreateForm({ onSuccess }: { onSuccess?: () => void }) {
                   <SelectValue placeholder="Selecciona un rol" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Soporte">Soporte</SelectItem>
                   <SelectItem value="Administrador">Administrador</SelectItem>
                   <SelectItem value="Dependiente">Dependiente</SelectItem>
                 </SelectContent>

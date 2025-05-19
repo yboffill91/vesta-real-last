@@ -50,7 +50,10 @@ const userEditSchema = z
     (data) => {
       if (data.password || data.repeatPassword) {
         return (
-          data.password === data.repeatPassword && data.password.length >= 6
+          typeof data.password === "string" &&
+          typeof data.repeatPassword === "string" &&
+          data.password === data.repeatPassword &&
+          data.password.length >= 6
         );
       }
       return true;
@@ -200,7 +203,7 @@ export function UserEditForm({ userId, onSuccess }: Props) {
               error={errors.username?.message}
               {...register("username")}
               placeholder="ej: juan.perez"
-              disabled={loadingUser}
+              disabled
             />
             <div className="grid md:grid-cols-2 gap-8">
               <RootInput
@@ -248,21 +251,25 @@ export function UserEditForm({ userId, onSuccess }: Props) {
                 </p>
               )}
             </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting || updating || loadingUser}
-            >
-              {isSubmitting || updating ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  <span className="ml-2">Actualizando usuario...</span>
-                </>
-              ) : (
-                "Actualizar usuario"
-              )}
-            </Button>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                type="submit"
+                className=""
+                disabled={isSubmitting || updating || loadingUser}
+              >
+                {isSubmitting || updating ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span className="ml-2">Actualizando usuario...</span>
+                  </>
+                ) : (
+                  "Actualizar usuario"
+                )}
+              </Button>
+              <Button variant={"outline"} onClick={() => router.back()}>
+                Cancelar
+              </Button>
+            </div>
             <Separator />
           </form>
         </Form>
