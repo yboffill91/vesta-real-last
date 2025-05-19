@@ -6,6 +6,7 @@ import { Loader2, Pencil, Trash } from "lucide-react";
 import { SystemAlert } from "@/components/ui/system-alert";
 
 import { useUsers } from "@/hooks/use-users";
+import { useDeleteUser } from "@/hooks/use-user";
 import {
   Table,
   TableBody,
@@ -32,6 +33,10 @@ export function UserTable() {
   const [showAlert, setShowAlert] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  // Para eliminar usuario
+  const [deleteTarget, setDeleteTarget] = useState<null | { id: number; name: string }>();
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const { deleteUser, loading: deleting, error: deleteError, success: deleteSuccess } = useDeleteUser();
 
   // Mostrar alerta si hay error
   useEffect(() => {
@@ -49,8 +54,21 @@ export function UserTable() {
 
   const router = useRouter();
 
+  // Manejar feedback de eliminación
+  useEffect(() => {
+    if (deleteSuccess) {
+      setShowDeleteAlert(false);
+      reload();
+    }
+  }, [deleteSuccess, reload]);
+
+  useEffect(() => {
+    if (deleteError) setShowDeleteAlert(true);
+  }, [deleteError]);
+
   return (
     <>
+      {/* Alerta de error general */}
       <SystemAlert
         open={showAlert}
         setOpen={setShowAlert}
@@ -59,6 +77,34 @@ export function UserTable() {
         confirmText="Aceptar"
         variant="destructive"
         onConfirm={() => setShowAlert(false)}
+      />
+      {/* Alerta de confirmación/eliminación */}
+      <SystemAlert
+        open={!!deleteTarget}
+        setOpen={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        title={deleteError ? "Error al eliminar usuario" : "¿Eliminar usuario?"}
+        description={
+          deleteError
+            ? deleteError
+            : deleteTarget
+            ? `¿Estás seguro que deseas eliminar a "${deleteTarget.name}"? Esta acción no se puede deshacer.`
+            : ""
+        }
+        confirmText={deleteError ? "Cerrar" : deleting ? "Eliminando..." : "Eliminar"}
+        cancelText={deleteError ? undefined : "Cancelar"}
+        variant={deleteError ? "destructive" : "default"}
+        onConfirm={async () => {
+          if (deleteTarget && !deleteError) {
+            await deleteUser(deleteTarget.id);
+            reload(); // Siempre recarga tras intentar eliminar
+          } else {
+            setDeleteTarget(null);
+            reload(); // También recarga si hay error o no hay target
+          }
+        }}
+        onCancel={() => setDeleteTarget(null)}
       />
       <Card>
         <CardHeader>
@@ -133,9 +179,14 @@ export function UserTable() {
                               <Button
                                 variant="destructive"
                                 size="sm"
-                                disabled={user.role === "Soporte"}
+                                disabled={user.role === "Soporte" || deleting}
+                                onClick={() => setDeleteTarget({ id: Number(user.id), name: user.name + ' ' + user.surname })}
                               >
-                                <Trash className="h-4 w-4" />
+                                {deleting && deleteTarget?.id === user.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash className="h-4 w-4" />
+                                )}
                               </Button>
                             </div>
                           </TableCell>

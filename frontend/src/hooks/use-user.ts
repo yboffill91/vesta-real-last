@@ -55,3 +55,25 @@ export function useUpdateUser() {
 
   return { updateUser, loading, error, success };
 }
+
+// Hook para eliminar un usuario por id
+export function useDeleteUser() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const deleteUser = useCallback(async (userId: string | number) => {
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+    const { success, error } = await fetchApi(`/api/v1/users/${userId}`, {
+      method: "DELETE",
+    });
+    setLoading(false);
+    setSuccess(!!success);
+    if (!success) setError(error || "No se pudo eliminar el usuario");
+    return success;
+  }, []);
+
+  return { deleteUser, loading, error, success };
+}
