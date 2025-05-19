@@ -72,15 +72,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       items: [
         {
           title: "Lista de Usuarios",
-          url: "/users",
+          url: "dashboard/users",
           icon: List,
-          isActive: isActive("/users"),
+          isActive: isActive("dashboard/users"),
         },
         {
           title: "Agregar Usuario",
-          url: "/users/add",
+          url: "/dashboard/users/add",
           icon: PlusIcon,
-          isActive: isActive("/users/add"),
+          isActive: isActive("/dashboard/users/add"),
         },
       ],
     },

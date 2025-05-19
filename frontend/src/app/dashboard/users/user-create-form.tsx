@@ -20,23 +20,35 @@ import { Loader2 } from "lucide-react";
 import { SystemAlert } from "@/components/ui/system-alert";
 import { fetchApi } from "@/lib/api";
 
-const userSchema = z.object({
-  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(32),
-  surname: z
-    .string()
-    .min(2, "El apellido debe tener al menos 2 caracteres")
-    .max(32),
-  username: z
-    .string()
-    .min(4, "El usuario debe tener al menos 4 caracteres")
-    .max(32),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-  role: z.enum(["Soporte", "Administrador", "Dependiente"], {
-    required_error: "El rol es obligatorio",
-  }),
-});
+const userSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, "El nombre debe tener al menos 2 caracteres")
+      .max(32),
+    surname: z
+      .string()
+      .min(2, "El apellido debe tener al menos 2 caracteres")
+      .max(32),
+    username: z
+      .string()
+      .min(4, "El usuario debe tener al menos 4 caracteres")
+      .max(32),
+    password: z
+      .string()
+      .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    repeatPassword: z.string().min(6, "Repite la contraseña"),
+    role: z.enum(["Soporte", "Administrador", "Dependiente"], {
+      required_error: "El rol es obligatorio",
+    }),
+  })
+  .refine((data) => data.password === data.repeatPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["repeatPassword"],
+  });
 
 type UserFormValues = z.infer<typeof userSchema>;
+type UserApiPayload = Omit<UserFormValues, "repeatPassword">;
 
 export function UserCreateForm({ onSuccess }: { onSuccess?: () => void }) {
   const [serverError, setServerError] = useState<string | null>(null);
@@ -60,9 +72,16 @@ export function UserCreateForm({ onSuccess }: { onSuccess?: () => void }) {
     setServerError(null);
     setLoading(true);
     try {
+      const payload: UserApiPayload = {
+        name: data.name,
+        surname: data.surname,
+        username: data.username,
+        password: data.password,
+        role: data.role,
+      };
       const { success, error } = await fetchApi("/api/v1/users", {
         method: "POST",
-        body: data,
+        body: payload,
       });
       if (!success) {
         setServerError(error || "Error al crear usuario");
@@ -143,14 +162,24 @@ export function UserCreateForm({ onSuccess }: { onSuccess?: () => void }) {
                 {...register("username")}
                 placeholder="ej: juan.perez"
               />
-              <RootInput
-                label="Contraseña"
-                htmlFor="password"
-                type="password"
-                error={errors.password?.message}
-                {...register("password")}
-                placeholder="************"
-              />
+              <div className="grid md:grid-cols-2 gap-8">
+                <RootInput
+                  label="Contraseña"
+                  htmlFor="password"
+                  type="password"
+                  error={errors.password?.message}
+                  {...register("password")}
+                  placeholder="************"
+                />
+                <RootInput
+                  label="Repetir contraseña"
+                  htmlFor="repeatPassword"
+                  type="password"
+                  error={errors.repeatPassword?.message}
+                  {...register("repeatPassword")}
+                  placeholder="Vuelve a escribir la contraseña"
+                />
+              </div>
               <div>
                 <label
                   className="block text-sm font-medium mb-1"
