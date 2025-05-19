@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthProvider";
-import { ThemeProvider } from "@/contexts/ThemeProvider";
+import { ThemeProvider } from "@/providers";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "TecnoTics SRL. Vesta System",
-  description: "Sistema de Gestión Integral de Pequeños y Medianos Negocios de Gastronomía y Servicios Gastrnómicos",
+  title: 'Sistema de Gestión de Comercios Gastronóm'
 };
 
 export default function RootLayout({
@@ -14,17 +23,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body>
-        <AuthProvider>
-          <ThemeProvider attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange={false} >
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+         <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange={false}
+          >
 
-          {children}
+        {children}
           </ThemeProvider>
-        </AuthProvider>
       </body>
     </html>
   );
