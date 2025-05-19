@@ -1,7 +1,7 @@
 import React from "react";
-import { UserCreateForm } from "../user-create-form";
+import { UserCreateForm } from "@/components/dashboard/users/user-create-form";
 import { Separator } from "@radix-ui/react-dropdown-menu";
-import { UserTable } from "../user-table";
+import { UserTable } from "@/components/dashboard/users/user-table";
 
 const AddUserPage = () => {
   return (

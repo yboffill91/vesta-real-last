@@ -24,3 +24,4 @@ export * from "./root-input";
 export * from "./system-alert";
 export * from "./table";
 export * from "./dashboard-cards";
+export * from "./FormWrapper";

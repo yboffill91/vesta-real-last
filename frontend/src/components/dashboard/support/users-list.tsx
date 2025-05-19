@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,37 +9,14 @@ import {
   TableRow,
   Button,
 } from "@/components/ui";
-import { fetchApi } from "@/lib/api";
-import { User } from "@/models/User.types";
-import { FileWarning, TriangleAlertIcon } from "lucide-react";
+
+import { TriangleAlertIcon } from "lucide-react";
 import Link from "next/link";
 
+import { useUsers } from "@/hooks/use-users";
+
 export function UsersList() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetchApi("/api/v1/users/");
-
-        if (response.success && response.data) {
-          setUsers(Array.isArray(response.data) ? response.data : []);
-        } else {
-          setError("Error al cargar los usuarios");
-        }
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        setError("Error al conectar con el servidor");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
+  const { users, loading: isLoading, error, reload } = useUsers();
 
   if (isLoading) {
     return (

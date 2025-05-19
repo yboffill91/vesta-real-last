@@ -66,9 +66,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const SupportNav: dashboardNavs[] = [
     {
       title: "Usuarios",
-      url: "/users",
+      url: "dashboard/users",
       icon: UserCheck,
-      isActive: isActive("/users"),
+      isActive: isActive("/dashboard/users"),
       items: [
         {
           title: "Lista de Usuarios",

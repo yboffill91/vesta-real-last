@@ -42,6 +42,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         const response = await fetchApi('/api/v1/auth/login', {
           method: 'POST',
           body: { username: email, password },
+          noToken: true,
         });
 
         console.log('[AUTH] Respuesta login:', response);

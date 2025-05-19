@@ -46,7 +46,8 @@ export const apiClient = {
       console.log('Intentando login con:', { username: email });
       return fetchApi<{ access_token: string, token_type: string, user: User }>('/api/v1/auth/login', { 
         method: 'POST', 
-        body: { username: email, password } 
+        body: { username: email, password },
+        noToken: true
       }).then(response => {
         console.log('Respuesta de login:', response);
         return response;

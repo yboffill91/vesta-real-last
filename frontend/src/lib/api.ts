@@ -15,6 +15,7 @@ export type FetchOptions = {
   body?: any;
   token?: string;
   query?: Record<string, string>;
+  noToken?: boolean;
 };
 
 /**
@@ -46,7 +47,8 @@ export async function fetchApi<T = any>(endpoint: string, options: FetchOptions 
     method = 'GET', 
     body, 
     token, 
-    query = {} 
+    query = {},
+    noToken = false
   } = options;
   
   // Construir headers
@@ -55,10 +57,12 @@ export async function fetchApi<T = any>(endpoint: string, options: FetchOptions 
     ...options.headers,
   };
   
-  // Agregar token de autenticación si existe, o usar el token por defecto
-  const authToken = token || getAuthToken();
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
+  // Agregar token de autenticación si existe, salvo que noToken esté en true
+  if (!noToken) {
+    const authToken = token || getAuthToken();
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
   }
   
   // Construir URL con query params si existen
