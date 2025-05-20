@@ -18,23 +18,15 @@ export type SystemAlertVariant = "default" | "destructive";
 
 type SystemAlertProps = {
   open: boolean;
-
   setOpen: (open: boolean) => void;
-
   title: string;
-
-  description: string;
-
+  description?: string;
+  customDescription?: React.ReactNode;
   confirmText?: string;
-
   cancelText?: string;
-
   onConfirm?: () => void;
-
   onCancel?: () => void;
-
   variant?: SystemAlertVariant;
-
   className?: string;
 };
 
@@ -43,6 +35,7 @@ export function SystemAlert({
   setOpen,
   title,
   description,
+  customDescription,
   confirmText = "OK",
   cancelText,
   onConfirm,
@@ -90,7 +83,7 @@ export function SystemAlert({
               variant === "destructive" ? "text-destructive-foreground" : ""
             )}
           >
-            {description}
+            {customDescription ?? description}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

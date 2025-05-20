@@ -118,55 +118,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const AdminNav: dashboardNavs[] = [
     {
       title: "Usuarios",
-      url: "/users",
+      url: "dashboard/users",
       icon: UserCheck,
-      isActive: isActive("/users"),
+      isActive: isActive("/dashboard/users"),
       items: [
         {
           title: "Lista de Usuarios",
-          url: "/users",
-          icon: UserCheck,
-          isActive: isActive("/users"),
+          url: "/dashboard/users",
+          icon: List,
+          isActive: isActive("/dashboard/users"),
         },
         {
           title: "Agregar Usuario",
-          url: "/users/add",
+          url: "/dashboard/users/add",
           icon: PlusIcon,
-          isActive: isActive("/users/add"),
+          isActive: isActive("/dashboard/users/add"),
         },
       ],
     },
     {
       title: " Establecimiento",
-      url: "/establishment",
-      icon: Vegan,
-      isActive: isActive("/establishment"),
+      url: "/dashboard/establishment",
+      icon: Home,
+      isActive: isActive("/dashboard/establishment"),
       items: [
-        {
-          title: "Agregar Establecimiento",
-          url: "/establishment/add",
-          icon: PlusIcon,
-          isActive: isActive("/establishment/add"),
-        },
         {
           title: "Editar Establecimiento",
-          url: "/establishment/edit",
-          icon: PlusIcon,
-          isActive: isActive("/establishment/edit"),
-        },
-      ],
-    },
-    {
-      title: "Licencia",
-      url: "/license",
-      icon: BadgeCheck,
-      isActive: isActive("/license"),
-      items: [
-        {
-          title: "Agregar Nueva Licencia",
-          url: "/license/add",
-          icon: PlusIcon,
-          isActive: isActive("/license/add"),
+          url: "/dashboard/establishment",
+          icon: Edit,
+          isActive: isActive("/dashboard/establishment"),
         },
       ],
     },
