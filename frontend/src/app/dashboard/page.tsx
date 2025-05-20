@@ -8,6 +8,7 @@ import {
 } from "@/components/ui";
 import { UsersList } from "@/components/dashboard/support/users-list";
 import { BadgeCheck, Home, Users } from "lucide-react";
+import { EstablishmentCard } from "@/components/dashboard/establishment/establishment-card";
 
 export default function SupportDashboard() {
   return (
@@ -17,10 +18,7 @@ export default function SupportDashboard() {
           <UsersList />
         </DashboardCards>
         <DashboardCards title="Gestión de Establecimiento" icon={Home}>
-          <div className="text-2xl font-bold">Datos del Establecimiento</div>
-          <p className="text-xs text-muted-foreground">
-            Configura la información de tu negocio
-          </p>
+          <EstablishmentCard />
         </DashboardCards>
         <DashboardCards title="Licencia" icon={BadgeCheck}>
           <div className="text-2xl font-bold">Licencia Activa</div>

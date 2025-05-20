@@ -31,10 +31,13 @@ class EstablishmentUpdate(BaseModel):
     
 class EstablishmentResponse(EstablishmentBase, IDModel, TimeStampMixin):
     """Schema for establishment response"""
-    
+    logo_url: Optional[str] = Field(None, alias="logo")
+
     class Config:
         orm_mode = True
-        
+        allow_population_by_field_name = True
+        allow_population_by_alias = True
+
 class EstablishmentDetailResponse(ResponseBase):
     """Schema for single establishment response"""
     data: EstablishmentResponse

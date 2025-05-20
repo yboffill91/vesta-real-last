@@ -111,7 +111,7 @@ async def create_establishment(
         phone=created_establishment['phone'],
         tax_rate=created_establishment['tax_rate'],
         currency=created_establishment['currency'],
-        logo_url=created_establishment['logo_url'],
+        logo=created_establishment['logo'],
         created_at=created_establishment.get('created_at'),
         updated_at=created_establishment.get('updated_at')
     )

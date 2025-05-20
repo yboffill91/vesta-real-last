@@ -15,6 +15,7 @@ import {
   Plus,
   Edit,
   BadgeDollarSign,
+  Home,
 } from "lucide-react";
 
 // import { NavUser } from "@/modules/dashboard/components";
@@ -86,21 +87,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     {
       title: " Establecimiento",
-      url: "/establishment",
-      icon: Vegan,
-      isActive: isActive("/establishment"),
+      url: "/dashboard/establishment",
+      icon: Home,
+      isActive: isActive("/dashboard/establishment"),
       items: [
         {
-          title: "Agregar Establecimiento",
-          url: "/establishment/add",
-          icon: PlusIcon,
-          isActive: isActive("/establishment/add"),
-        },
-        {
           title: "Editar Establecimiento",
-          url: "/establishment/edit",
+          url: "/dashboard/establishment/edit",
           icon: Edit,
-          isActive: isActive("/establishment/edit"),
+          isActive: isActive("/dashboard/establishment/edit"),
         },
       ],
     },
