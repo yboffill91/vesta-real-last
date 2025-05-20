@@ -88,7 +88,7 @@ export function LoginForm({
       if (user?.role === "Soporte") {
         router.replace("/dashboard");
       } else if (user?.role === "Administrador") {
-        router.replace("/dashboard");
+        router.replace("/dashboard/admin");
       } else {
         // Rol no reconocido, redirigir a la página por defecto
         router.replace("/");
