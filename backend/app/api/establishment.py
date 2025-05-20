@@ -43,7 +43,7 @@ async def get_establishment(
     if not db_establishment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Establishment configuration not found"
+            detail="Configuración del establecimiento no encontrada"
         )
     
     # Convert to response model
@@ -61,7 +61,7 @@ async def get_establishment(
     
     return {
         "status": "success",
-        "message": "Establishment configuration retrieved successfully",
+        "message": "Configuración del establecimiento obtenida correctamente",
         "data": establishment_response
     }
 
@@ -87,7 +87,7 @@ async def create_establishment(
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Establishment already exists. Please use PUT to update."
+            detail="El establecimiento ya existe. Por favor, use PUT para actualizar."
         )
     
     # Create establishment in database
@@ -97,7 +97,7 @@ async def create_establishment(
     if not new_establishment_id:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create establishment configuration"
+            detail="No se pudo crear la configuración del establecimiento"
         )
     
     # Get the created establishment
@@ -118,7 +118,7 @@ async def create_establishment(
     
     return {
         "status": "success",
-        "message": "Establishment configuration created successfully",
+        "message": "Configuración del establecimiento creada correctamente",
         "data": establishment_response
     }
 
@@ -144,7 +144,7 @@ async def update_establishment(
     if not db_establishment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Establishment configuration not found. Please create one first."
+            detail="Configuración del establecimiento no encontrada. Por favor, cree una primero."
         )
     
     # Update establishment data
@@ -156,7 +156,7 @@ async def update_establishment(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update establishment configuration"
+            detail="No se pudo actualizar la configuración del establecimiento"
         )
     
     # Get the updated establishment
@@ -170,13 +170,13 @@ async def update_establishment(
         phone=updated_establishment['phone'],
         tax_rate=updated_establishment['tax_rate'],
         currency=updated_establishment['currency'],
-        logo_url=updated_establishment['logo_url'],
+        logo_url=updated_establishment['logo'],
         created_at=updated_establishment.get('created_at'),
         updated_at=updated_establishment.get('updated_at')
     )
     
     return {
         "status": "success",
-        "message": "Establishment configuration updated successfully",
+        "message": "Configuración del establecimiento actualizada correctamente",
         "data": establishment_response
     }

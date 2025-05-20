@@ -34,7 +34,7 @@ async def get_config(current_user: dict = Depends(require_admin)):
     # In a real implementation, this would fetch from database
     return {
         "status": "success",
-        "message": "Configuration retrieved successfully",
+        "message": "Configuración obtenida exitosamente",
         "data": {
             "app_name": "Vesta Restaurant System",
             "version": "1.0.0",

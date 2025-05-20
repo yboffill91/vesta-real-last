@@ -3,6 +3,7 @@ import { Button, DashboardCardAlert } from "@/components/ui";
 import { useEstablishment } from "@/hooks/use-establishment";
 import { Loader2, AlertTriangle, TriangleAlertIcon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export function EstablishmentCard() {
   const { establishment, loading, error } = useEstablishment();
@@ -43,6 +44,18 @@ export function EstablishmentCard() {
           Dirección: {establishment.address}
         </div>
       )}
+      {establishment.phone && (
+        <div className="text-sm text-muted-foreground">
+          Teléfono: {establishment.phone}
+        </div>
+      )}
+
+      {establishment.currency && (
+        <div className="text-sm text-muted-foreground">
+          Moneda: {establishment.currency}
+        </div>
+      )}
+
       {/* Agrega aquí más campos según el modelo real del establecimiento */}
     </div>
   );

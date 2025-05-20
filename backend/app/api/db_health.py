@@ -20,5 +20,5 @@ async def db_health_check():
     is_connected = check_connection()
     
     return {
-        "status": "connected" if is_connected else "disconnected"
+        "estado": "conectado" if is_connected else "desconectado"
     }

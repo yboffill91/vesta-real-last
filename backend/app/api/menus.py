@@ -21,8 +21,8 @@ router = APIRouter(
     prefix="/api/v1/menus",
     tags=["Menus"],
     responses={
-        403: {"description": "Forbidden - Not enough permissions"},
-        401: {"description": "Unauthorized - Not authenticated"}
+        403: {"description": "Prohibido - Permisos insuficientes"},
+        401: {"description": "No autorizado - No autenticado"}
     },
 )
 
@@ -72,7 +72,7 @@ async def get_menus(
     
     return {
         "status": "success",
-        "message": "Menus retrieved successfully",
+        "message": "Menús obtenidos exitosamente",
         "data": menus
     }
 
@@ -106,7 +106,7 @@ async def create_menu(
     if not new_menu_id:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create menu"
+            detail="No se pudo crear el menú"
         )
     
     # Add sales areas if provided
@@ -128,7 +128,7 @@ async def create_menu(
     
     return {
         "status": "success",
-        "message": "Menu created successfully",
+        "message": "Menú creado exitosamente",
         "data": menu_response
     }
 
@@ -218,7 +218,7 @@ async def update_menu(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update menu"
+            detail="No se pudo actualizar el menú"
         )
     
     # Update sales areas if provided
@@ -240,7 +240,7 @@ async def update_menu(
     
     return {
         "status": "success",
-        "message": "Menu updated successfully",
+        "message": "Menú actualizado exitosamente",
         "data": menu_response
     }
 
@@ -275,7 +275,7 @@ async def delete_menu(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete menu"
+            detail="No se pudo eliminar el menú"
         )
     
     # Convert to response model
@@ -290,7 +290,7 @@ async def delete_menu(
     
     return {
         "status": "success",
-        "message": "Menu deleted successfully",
+        "message": "Menú eliminado exitosamente",
         "data": menu_response
     }
 
@@ -327,10 +327,10 @@ async def assign_menu_to_sales_areas(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to assign menu to sales areas"
+            detail="No se pudo asignar el menú a las áreas de venta"
         )
     
     return {
         "status": "success",
-        "message": "Menu assigned to sales areas successfully"
+        "message": "Menú asignado a las áreas de venta exitosamente"
     }

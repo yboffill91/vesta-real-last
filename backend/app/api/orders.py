@@ -27,8 +27,8 @@ router = APIRouter(
     prefix="/api/v1/orders",
     tags=["Orders"],
     responses={
-        403: {"description": "Forbidden - Not enough permissions"},
-        401: {"description": "Unauthorized - Not authenticated"}
+        403: {"description": "Prohibido - Permisos insuficientes"},
+        401: {"description": "No autorizado - No autenticado"}
     },
 )
 
@@ -114,7 +114,7 @@ async def get_orders(
     
     return {
         "status": "success",
-        "message": "Orders retrieved successfully",
+        "message": "Órdenes obtenidas exitosamente",
         "data": orders,
         "pagination": {
             "page": page,
@@ -161,7 +161,7 @@ async def create_order(
     if not new_order_id:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create order"
+            detail="No se pudo crear la orden"
         )
     
     # Add order items if provided
@@ -202,7 +202,7 @@ async def create_order(
     
     return {
         "status": "success",
-        "message": "Order created successfully",
+        "message": "Orden creada exitosamente",
         "data": order_response
     }
 
@@ -295,7 +295,7 @@ async def update_order(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update order"
+            detail="No se pudo actualizar la orden"
         )
     
     # Handle items updates if provided
@@ -331,7 +331,7 @@ async def update_order(
     
     return {
         "status": "success",
-        "message": "Order updated successfully",
+        "message": "Orden actualizada exitosamente",
         "data": order_response
     }
 
@@ -453,7 +453,7 @@ async def delete_order(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete order"
+            detail="No se pudo eliminar la orden"
         )
     
     # Update service spot status
@@ -481,7 +481,7 @@ async def delete_order(
     
     return {
         "status": "success",
-        "message": "Order deleted successfully",
+        "message": "Orden eliminada exitosamente",
         "data": order_response
     }
 
@@ -527,7 +527,7 @@ async def add_order_item(
     if not new_item_id:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to add order item"
+            detail="No se pudo añadir el ítem a la orden"
         )
     
     # Update order total
@@ -552,7 +552,7 @@ async def add_order_item(
     
     return {
         "status": "success",
-        "message": "Order item added successfully",
+        "message": "Ítem añadido exitosamente a la orden",
         "data": order_response
     }
 
@@ -595,7 +595,7 @@ async def delete_order_item(
     if not db_item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Order item not found"
+            detail="Ítem de la orden no encontrado"
         )
     
     # Delete the item
@@ -604,7 +604,7 @@ async def delete_order_item(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete order item"
+            detail="No se pudo eliminar el ítem de la orden"
         )
     
     # Update order total
@@ -629,6 +629,6 @@ async def delete_order_item(
     
     return {
         "status": "success",
-        "message": "Order item deleted successfully",
+        "message": "Ítem eliminado exitosamente de la orden",
         "data": order_response
     }

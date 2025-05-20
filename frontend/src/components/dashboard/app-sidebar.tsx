@@ -93,9 +93,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       items: [
         {
           title: "Editar Establecimiento",
-          url: "/dashboard/establishment/edit",
+          url: "/dashboard/establishment",
           icon: Edit,
-          isActive: isActive("/dashboard/establishment/edit"),
+          isActive: isActive("/dashboard/establishment"),
         },
       ],
     },

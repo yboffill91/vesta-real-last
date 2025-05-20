@@ -4,8 +4,57 @@ import { fetchApi } from "@/lib/api";
 export interface Establishment {
   id: number;
   name: string;
-  address?: string;
-  // ...otros campos relevantes
+  address: string;
+  phone: string;
+  logo: string;
+  tax_rate: number;
+  currency: string;
+  is_configured: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EstablishmentEditPayload {
+  name: string;
+  address: string;
+  phone: string;
+  logo?: string;
+  tax_rate: number;
+  currency: "CUP" | "USD";
+  is_configured?: boolean;
+}
+
+export function useEditEstablishment() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const editEstablishment = async (data: EstablishmentEditPayload) => {
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      const { success: ok, data: respData, error: respError } = await fetchApi<Establishment>(
+        "/api/v1/establishment/",
+        {
+          method: "PUT",
+          body: data,
+        }
+      );
+      if (!ok) {
+        throw new Error(respError || "Error al actualizar establecimiento");
+      }
+      setSuccess(true);
+      return respData;
+    } catch (err: any) {
+      setError(err.message || "Error de red");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { editEstablishment, loading, error, success };
 }
 
 export function useEstablishment() {
@@ -19,7 +68,9 @@ export function useEstablishment() {
     setLoading(true);
     setError(null);
     try {
-      const { success, data, error, status } = await fetchApi("/api/v1/establishment/");
+      const { success, data, error, status } = await fetchApi(
+        "/api/v1/establishment/"
+      );
       if (!success) {
         if (status === 404) {
           setEstablishment(null);

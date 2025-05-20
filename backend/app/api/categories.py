@@ -22,8 +22,8 @@ router = APIRouter(
     prefix="/api/v1/categories",
     tags=["Categories"],
     responses={
-        403: {"description": "Forbidden - Not enough permissions"},
-        401: {"description": "Unauthorized - Not authenticated"}
+        403: {"description": "Prohibido - Permisos insuficientes"},
+        401: {"description": "No autorizado - No autenticado"}
     },
 )
 
@@ -64,7 +64,7 @@ async def get_categories(
     
     return {
         "status": "success",
-        "message": "Categories retrieved successfully",
+        "message": "Categorías obtenidas exitosamente",
         "data": categories
     }
 
@@ -92,7 +92,7 @@ async def create_category(
     if not new_category_id:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create category"
+            detail="No se pudo crear la categoría"
         )
     
     # Get the created category
@@ -110,7 +110,7 @@ async def create_category(
     
     return {
         "status": "success",
-        "message": "Category created successfully",
+        "message": "Categoría creada exitosamente",
         "data": category_response
     }
 
@@ -195,7 +195,7 @@ async def get_category_with_products(
     
     return {
         "status": "success",
-        "message": "Category with products retrieved successfully",
+        "message": "Categoría con productos obtenida exitosamente",
         "data": category_response
     }
 
@@ -235,7 +235,7 @@ async def update_category(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update category"
+            detail="No se pudo actualizar la categoría"
         )
     
     # Get the updated category
@@ -253,7 +253,7 @@ async def update_category(
     
     return {
         "status": "success",
-        "message": "Category updated successfully",
+        "message": "Categoría actualizada exitosamente",
         "data": category_response
     }
 
@@ -288,7 +288,7 @@ async def delete_category(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete category"
+            detail="No se pudo eliminar la categoría"
         )
     
     # Convert to response model
@@ -303,6 +303,6 @@ async def delete_category(
     
     return {
         "status": "success",
-        "message": "Category deleted successfully",
+        "message": "Categoría eliminada exitosamente",
         "data": category_response
     }
