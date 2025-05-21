@@ -16,6 +16,9 @@ import {
   Edit,
   BadgeDollarSign,
   Home,
+  Store,
+  Map,
+  LayoutGrid,
 } from "lucide-react";
 
 // import { NavUser } from "@/modules/dashboard/components";
@@ -137,18 +140,84 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       ],
     },
     {
-      title: " Establecimiento",
-      url: "/dashboard/establishment",
-      icon: Home,
-      isActive: isActive("/dashboard/establishment"),
+      title: "Áreas de Venta",
+      url: "/dashboard/areas",
+      icon: Store,
+      isActive: isActive("/dashbboard/areas"),
       items: [
         {
-          title: "Editar Establecimiento",
-          url: "/dashboard/establishment",
-          icon: Edit,
-          isActive: isActive("/dashboard/establishment"),
+          title: "Lista de Áreas de Venta",
+          url: "/dashboard/areas",
+          icon: List,
+          isActive: isActive("/dashboard/areas"),
+        },
+        {
+          title: "Agregar Área de Venta",
+          url: "/dashboard/areas/add",
+          icon: Plus,
+          isActive: isActive("/dashboard/areas/add"),
         },
       ],
+    },
+    {
+      title: "Puestos de Servicio",
+      url: "/dashboard/spots",
+      icon: Map,
+      isActive: isActive("/dashbboard/spots"),
+      items: [
+        {
+          title: "Agregar Área de Servicio",
+          url: "/dashboard/spots/add",
+          icon: Plus,
+          isActive: isActive("/dashboard/spots/add"),
+        },
+      ],
+    },
+    {
+      title: "Productos",
+      url: "/dashboard/products",
+      icon: ShoppingCart,
+      isActive: isActive("/dashbboard/products"),
+      items: [
+        {
+          title: "Agregar Productos",
+          url: "/dashboard/products/add",
+          icon: Plus,
+          isActive: isActive("/dashboard/products/add"),
+        },
+        {
+          title: "Categorías",
+          url: "/dashboard/categories",
+          icon: LayoutGrid,
+          isActive: isActive("/dashboard/categories"),
+        },
+        {
+          title: "Agregar Categorías",
+          url: "/dashboard/categories/add",
+          icon: Plus,
+          isActive: isActive("/dashboard/categories/add"),
+        },
+      ],
+    },
+    {
+      title: "Cartas Menú",
+      url: "/dashboard/menu",
+      icon: Store,
+      isActive: isActive("/dashbboard/menu"),
+      items: [
+        {
+          title: "Agregar Carta Menú",
+          url: "/dashboard/menu/add",
+          icon: Plus,
+          isActive: isActive("/dashboard/menu/add"),
+        },
+      ],
+    },
+    {
+      title: "Órdenes",
+      url: "/dashboard/orders",
+      icon: List,
+      isActive: isActive("/dashbboard/orders"),
     },
   ];
 

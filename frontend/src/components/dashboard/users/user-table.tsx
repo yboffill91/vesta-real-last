@@ -33,7 +33,7 @@ export function UserTable() {
   const [showAlert, setShowAlert] = useState(false);
   const [nameFilter, setNameFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
-  // Para eliminar usuario
+  const getUsers = users.filter((user) => user.role !== "Soporte");
   const [deleteTarget, setDeleteTarget] = useState<null | {
     id: number;
     name: string;
@@ -52,7 +52,7 @@ export function UserTable() {
   }, [error]);
 
   // Filtrado de usuarios
-  const filteredUsers = users.filter((user) => {
+  const filteredUsers = getUsers.filter((user) => {
     const matchesName = user.name
       .toLowerCase()
       .includes(nameFilter.toLowerCase());

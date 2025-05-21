@@ -18,7 +18,7 @@ import { useUsers } from "@/hooks/use-users";
 
 export function UsersList() {
   const { users, loading: isLoading, error, reload } = useUsers();
-
+  const filteredUsers = users.filter((user) => user.role !== "Soporte");
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -42,7 +42,13 @@ export function UsersList() {
   // Check if there's only the default support user
   if (users.length <= 1) {
     return (
-      <DashboardCardAlert alert="No ha configurado un usuario administrador todavía." action="Crear Usuario Administrador" link="/dashboard/users/add"/>
+      <DashboardCardAlert
+        title="No hay usuarios creados"
+        alert="No ha configurado un usuario administrador todavía."
+        action="Crear Usuario Administrador"
+        link="/dashboard/users/add"
+        variant="warning"
+      />
     );
   }
 
@@ -56,18 +62,18 @@ export function UsersList() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.username}</TableCell>
+          {filteredUsers.map(({ id, name, surname, role }) => (
+            <TableRow key={id}>
+              <TableCell>{`${name} ${surname}`}</TableCell>
               <TableCell>
                 <span
-                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    user.role === "Administrador"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-blue-100 text-blue-800"
+                  className={`px-2 py-px rounded-lg  ${
+                    role === "Administrador"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-accent text-accent-foreground"
                   }`}
                 >
-                  {user.role}
+                  {role}
                 </span>
               </TableCell>
             </TableRow>

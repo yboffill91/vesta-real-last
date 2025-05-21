@@ -1,27 +1,25 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+"use client";
 import { Button } from "@/components/ui";
-import Link from "next/link";
+import { Separator } from "@/components/ui";
+import { useRouter } from "next/navigation";
 
 export default function NotFoundPage() {
+  const router = useRouter();
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="max-w-md w-full shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-primary text-center text-3xl">
-            Página no encontrada (404)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-4">
-          <p className="text-center text-muted-foreground">
-            La página que buscas no existe o ha sido movida.
-            <br />
-            Puedes regresar al inicio.
-          </p>
-          <Button asChild variant="outline">
-            <Link href="/">Ir al inicio</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <main className="min-h-screen w-screen flex items-center justify-center flex-col">
+      <div className="flex flex-col items-center p-8 border rounded-lg">
+        <h1 className="text-7xl font-semibold bg-gradient-to-br from-primary to-destructive bg-clip-text text-transparent">
+          Error 404
+        </h1>
+        <h2 className="text-3xl font-semibold px-2 py-px bg-primary text-primary-foreground rounded-lg">
+          Página no encontrada
+        </h2>
+        <p className="text-lg my-8 ">
+          La página que buscas no existe o ha sido movida.
+        </p>
+        <Separator className="mb-6" />
+        <Button onClick={router.back}>Volver a atrás</Button>
+      </div>
+    </main>
   );
 }
