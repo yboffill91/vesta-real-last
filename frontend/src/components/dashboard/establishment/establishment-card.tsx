@@ -32,6 +32,8 @@ export function EstablishmentCard() {
         alert="No ha configurado un establecimiento todavía."
         action="Configurar establecimiento"
         link="/dashboard/establishment/add"
+        title="No ha configurado un establecimiento todavía."
+        variant="warning"
       />
     );
   }

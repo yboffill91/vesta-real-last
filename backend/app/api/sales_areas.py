@@ -69,7 +69,7 @@ async def get_sales_areas(
     
     return {
         "status": "success",
-        "message": "Sales areas retrieved successfully",
+        "message": "Áreas de venta recuperadas correctamente",
         "data": areas
     }
 
@@ -97,7 +97,7 @@ async def create_sales_area(
     if not new_area_id:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create sales area"
+            detail="No se pudo crear el área de venta"
         )
     
     # Get the created sales area
@@ -116,7 +116,7 @@ async def create_sales_area(
     
     return {
         "status": "success",
-        "message": "Sales area created successfully",
+        "message": "Área de venta creada correctamente",
         "data": area_response
     }
 
@@ -143,7 +143,7 @@ async def get_sales_area(
     if not db_area:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Sales area not found"
+            detail="Área de venta no encontrada"
         )
     
     # Convert to response model
@@ -159,7 +159,7 @@ async def get_sales_area(
     
     return {
         "status": "success",
-        "message": "Sales area retrieved successfully",
+        "message": "Área de venta recuperada correctamente",
         "data": area_response
     }
 
@@ -186,7 +186,7 @@ async def get_sales_area_with_spots(
     if not db_area:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Sales area not found"
+            detail="Área de venta no encontrada"
         )
     
     # Convert to response model
@@ -203,7 +203,7 @@ async def get_sales_area_with_spots(
     
     return {
         "status": "success",
-        "message": "Sales area with spots retrieved successfully",
+        "message": "Área de venta con puntos de servicio recuperada correctamente",
         "data": area_response
     }
 
@@ -231,7 +231,7 @@ async def update_sales_area(
     if not db_area:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Sales area not found"
+            detail="Área de venta no encontrada"
         )
     
     # Update sales area data
@@ -243,7 +243,7 @@ async def update_sales_area(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update sales area"
+            detail="No se pudo actualizar el área de venta"
         )
     
     # Get the updated sales area
@@ -262,7 +262,7 @@ async def update_sales_area(
     
     return {
         "status": "success",
-        "message": "Sales area updated successfully",
+        "message": "Área de venta actualizada correctamente",
         "data": area_response
     }
 
@@ -288,7 +288,7 @@ async def delete_sales_area(
     if not db_area:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Sales area not found"
+            detail="Área de venta no encontrada"
         )
     
     # Delete the sales area
@@ -297,7 +297,7 @@ async def delete_sales_area(
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete sales area"
+            detail="No se pudo eliminar el área de venta"
         )
     
     # Convert to response model
@@ -313,6 +313,6 @@ async def delete_sales_area(
     
     return {
         "status": "success",
-        "message": "Sales area deleted successfully",
+        "message": "Área de venta eliminada correctamente",
         "data": area_response
     }

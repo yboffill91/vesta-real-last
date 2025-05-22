@@ -99,3 +99,43 @@ export function useEstablishment() {
 
   return { establishment, loading, error, reload: getEstablishment };
 }
+
+// Nuevo hook para obtener múltiples establecimientos
+export function useEstablishments() {
+  const [establishments, setEstablishments] = useState<Establishment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const getEstablishments = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { success, data, error } = await fetchApi("/api/v1/establishment/", { method: "GET" });
+      if (!success) {
+        setError(error || "No se pudo obtener los establecimientos");
+        setEstablishments([]);
+      } else if (Array.isArray(data)) {
+        // La API devuelve [{ status, message, data }, ...]
+        setEstablishments(data.map((item: any) => item.data));
+      } else if (data && data.results && Array.isArray(data.results)) {
+        setEstablishments(data.results.map((item: any) => item.data));
+      } else if (data && data.data) {
+        setEstablishments([data.data]);
+      } else if (data) {
+        setEstablishments([data]);
+      } else {
+        setEstablishments([]);
+      }
+    } catch (e: any) {
+      setError(e.message || "Error desconocido");
+      setEstablishments([]);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    getEstablishments();
+  }, [getEstablishments]);
+
+  return { establishments, loading, error, reload: getEstablishments };
+}

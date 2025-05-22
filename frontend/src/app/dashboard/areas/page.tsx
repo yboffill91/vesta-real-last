@@ -14,6 +14,9 @@ interface SalesArea {
 import SalesAreasTable from "@/components/dashboard/areas/sales-areas-table";
 
 export default function SalesAreasPage() {
-  return <SalesAreasTable />;
+  return (
+    <main className="container mx-auto max-w-3xl">
+      <SalesAreasTable />
+    </main>
+  );
 }
-
