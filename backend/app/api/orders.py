@@ -140,6 +140,7 @@ async def create_order(
         OrderDetailResponse: The created order data
     """
     logger.info(f"User {current_user['username']} is creating a new order")
+    logger.info(f"current_user dict: {current_user}")
     
     # Check if service spot exists and is available
     spot = ServiceSpot.find_by_id(order.service_spot_id)
@@ -153,7 +154,7 @@ async def create_order(
     order_data = order.dict(exclude={"items"})
     
     # Add creator info
-    order_data["created_by"] = current_user["username"]
+    order_data["created_by"] = current_user["user_id"]
     
     # Create order in database
     new_order_id = Order.create(order_data)
@@ -163,13 +164,6 @@ async def create_order(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo crear la orden"
         )
-    
-    # Add order items if provided
-    if order.items:
-        for item in order.items:
-            item_data = item.dict()
-            item_data["order_id"] = new_order_id
-            OrderItem.create(item_data)
     
     # Update order total using stored procedure
     Order.update_total(new_order_id)

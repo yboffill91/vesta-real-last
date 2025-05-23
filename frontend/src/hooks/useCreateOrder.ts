@@ -10,9 +10,11 @@ export function useCreateOrder() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetchApi("/api/orders", {
+      console.log("[useCreateOrder] Payload enviado:", order);
+      console.log("[useCreateOrder] typeof order.created_by:", typeof order.created_by, order.created_by);
+      const response = await fetchApi("/api/v1/orders/", {
         method: "POST",
-        body: JSON.stringify(order),
+        body: order,
         headers: { "Content-Type": "application/json" },
       });
       setData(response);

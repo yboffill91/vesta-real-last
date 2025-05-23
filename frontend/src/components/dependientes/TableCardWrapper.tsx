@@ -45,17 +45,21 @@ export const TableCardWrapper: React.FC = () => {
                     onClick={() => {
                       // Obtener user_id real desde auth
                       // eslint-disable-next-line @typescript-eslint/no-var-requires
-                      const { user } = require("@/lib/auth").useAuthStore.getState();
+                      const { user } =
+                        require("@/lib/auth").useAuthStore.getState();
                       if (!user) {
                         alert("Debes iniciar sesión para crear una orden.");
                         return;
                       }
-                      const user_id = user.id;
-                      router.push(`/dependientes/orden?spot_id=${
-                        spot.id
-                      }&mesa=${encodeURIComponent(
-                        spot.name
-                      )}&user_id=${user_id}`);
+                      const user_id = user?.id;
+                      console.log("user_id", user_id);
+                      router.push(
+                        `/dependientes/orden?spot_id=${
+                          spot.id
+                        }&mesa=${encodeURIComponent(
+                          spot.name
+                        )}&user_id=${user_id}&sales_area_id=${area.id}`
+                      );
                     }}
                   >
                     <CardHeader>
