@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { fetchApi } from "@/lib/api";
 
+import type { ServiceSpot } from "@/components/dependientes/TableCardWrapper";
+
 export interface SalesArea {
   id: number;
   name: string;
   description?: string;
-  // Agrega otros campos según la respuesta real de la API
+  is_active?: boolean;
+  establishment_id?: number;
+  created_at?: string;
+  updated_at?: string;
+  service_spots?: ServiceSpot[];
 }
 
 export function useSalesAreas() {

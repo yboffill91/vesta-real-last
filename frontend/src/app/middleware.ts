@@ -64,6 +64,43 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
+  // --- Comprobación de rol y redirección centralizada ---
+  if (isAuthenticated && authToken) {
+    const role = getUserRoleFromToken(authToken);
+    // Acceso a /dashboard
+    if (pathname === '/dashboard' || pathname === '/dashboard/') {
+      if (role === 'Administrador') {
+        return NextResponse.redirect(new URL('/dashboard/admin', request.url));
+      }
+      if (role === 'Dependiente') {
+        return NextResponse.redirect(new URL('/dependientes', request.url));
+      }
+      // Soporte se queda en /dashboard
+    }
+    // Acceso a /dashboard/admin
+    if (pathname.startsWith('/dashboard/admin')) {
+      if (role !== 'Administrador') {
+        if (role === 'Soporte') {
+          return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
+        if (role === 'Dependiente') {
+          return NextResponse.redirect(new URL('/dependientes', request.url));
+        }
+      }
+    }
+    // Acceso a /dependientes
+    if (pathname.startsWith('/dependientes')) {
+      if (role !== 'Dependiente') {
+        if (role === 'Soporte') {
+          return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
+        if (role === 'Administrador') {
+          return NextResponse.redirect(new URL('/dashboard/admin', request.url));
+        }
+      }
+    }
+  }
+
   // Si llegamos hasta aquí, permitir el acceso a la ruta solicitada
   return NextResponse.next();
 }

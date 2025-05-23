@@ -6,7 +6,7 @@ Only accessible to users with Soporte or Administrador roles.
 import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
-from app.utils.auth_middleware import require_admin
+from app.utils.auth_middleware import require_admin, require_dependiente
 from app.schemas.sales_area import (
     SalesAreaCreate, SalesAreaUpdate, SalesAreaResponse, SalesAreasResponse,
     SalesAreaDetailResponse, SalesAreaWithSpotsResponse, SalesAreaWithSpotsDetailResponse
@@ -28,7 +28,7 @@ router = APIRouter(
 
 @router.get("/", response_model=SalesAreasResponse)
 async def get_sales_areas(
-    current_user: dict = Depends(require_admin),
+    current_user: dict = Depends(require_dependiente),
     active_only: bool = True,
     establishment_id: Optional[int] = None
 ):

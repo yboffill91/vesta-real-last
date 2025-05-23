@@ -152,13 +152,13 @@ CREATE TABLE IF NOT EXISTS OrderItems (
 );
 
 -- Insertar categorías predeterminadas
-INSERT INTO ProductCategories (name, description) VALUES 
-('Tragos', 'Bebidas alcohólicas mezcladas'),
-('Bebidas', 'Refrescos, jugos y otras bebidas no alcohólicas'),
-('Tablets', 'Combos y ofertas especiales'),
-('Ofertas', 'Promociones temporales'),
-('Infusiones', 'Tés, cafés y otras bebidas calientes'),
-('Entrantes', 'Aperitivos y entradas'),
-('Plato Principal', 'Platos principales'),
-('Guarnición', 'Acompañamientos para platos principales'),
-('Postres', 'Dulces y postres');
+-- INSERT INTO ProductCategories (name, description) VALUES 
+-- ('Tragos', 'Bebidas alcohólicas mezcladas'),
+-- ('Bebidas', 'Refrescos, jugos y otras bebidas no alcohólicas'),
+-- ('Tablets', 'Combos y ofertas especiales'),
+-- ('Ofertas', 'Promociones temporales'),
+-- ('Infusiones', 'Tés, cafés y otras bebidas calientes'),
+-- ('Entrantes', 'Aperitivos y entradas'),
+-- ('Plato Principal', 'Platos principales'),
+-- ('Guarnición', 'Acompañamientos para platos principales'),
+-- ('Postres', 'Dulces y postres');
