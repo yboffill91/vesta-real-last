@@ -5,6 +5,7 @@ export interface ServiceSpot {
   id: number;
   name: string;
   description?: string;
+  status?: string;
   is_active: boolean;
   establishment_id: number;
   created_at: string;

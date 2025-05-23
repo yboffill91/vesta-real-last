@@ -26,7 +26,9 @@ router = APIRouter(
     },
 )
 
-@router.get("/", response_model=SalesAreasResponse)
+from app.schemas.sales_area import SalesAreaWithSpotsResponse
+
+@router.get("/", response_model=dict)
 async def get_sales_areas(
     current_user: dict = Depends(require_dependiente),
     active_only: bool = True,
@@ -54,19 +56,44 @@ async def get_sales_areas(
             where["establishment_id"] = establishment_id
         db_areas = SalesArea.find_all(where=where, order_by="name ASC")
     
-    # Convert to response model
+    # Obtener los service spots para cada área
+    from app.models.service_spot import ServiceSpot
+    area_ids = [area['id'] for area in db_areas]
+    spots_by_area = {}
+    for area in db_areas:
+        spots = ServiceSpot.find_all(where={"sales_area_id": area["id"]}, order_by="name ASC")
+        spots_by_area[area["id"]] = spots
+
+    # Convert to response model, agregando service_spots
+    # Serializa service_spots y datetimes a tipos nativos de Python
+    def serialize_spot(spot):
+        return {
+            "id": spot["id"],
+            "name": spot["name"],
+            "capacity": spot.get("capacity"),
+            "status": spot.get("status"),
+            "is_active": bool(spot.get("is_active", True)),
+            "created_at": spot.get("created_at").isoformat() if spot.get("created_at") else None,
+            "updated_at": spot.get("updated_at").isoformat() if spot.get("updated_at") else None,
+            "sales_area_id": spot.get("sales_area_id")
+        }
+
     areas = [
-        SalesAreaResponse(
-            id=area['id'],
-            name=area['name'],
-            description=area['description'],
-            is_active=area['is_active'],
-            establishment_id=area['establishment_id'],
-            created_at=area.get('created_at'),
-            updated_at=area.get('updated_at')
-        ) for area in db_areas
+        {
+            "id": area['id'],
+            "name": area['name'],
+            "description": area['description'],
+            "is_active": bool(area['is_active']),
+            "establishment_id": area['establishment_id'],
+            "created_at": area.get('created_at').isoformat() if area.get('created_at') else None,
+            "updated_at": area.get('updated_at').isoformat() if area.get('updated_at') else None,
+            "service_spots": [serialize_spot(spot) for spot in spots_by_area.get(area['id'], [])]
+        }
+        for area in db_areas
     ]
-    
+
+    import logging
+    logging.warning(f"RESPONSE AREAS DEBUG: {areas}")
     return {
         "status": "success",
         "message": "Áreas de venta recuperadas correctamente",

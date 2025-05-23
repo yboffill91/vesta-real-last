@@ -1,6 +1,6 @@
 import React from "react";
 
-import TableCardWrapper from "@/components/dependientes/TableCardWrapper";
+import { TableCardWrapper } from "@/components/dependientes/TableCardWrapper";
 
 const DependientePage = () => {
   // Por ahora, usamos areaId fijo (1). Se puede parametrizar luego.

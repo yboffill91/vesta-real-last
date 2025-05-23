@@ -60,6 +60,7 @@ from app.api.db_health import router as db_health_router
 from app.api.auth import router as auth_router
 from app.api.config import router as config_router
 from app.api.products import router as products_router
+from app.api.products_grouped import router as products_grouped_router
 from app.api.users import router as users_router
 from app.api.orders import router as orders_router
 from app.api.categories import router as categories_router
@@ -73,6 +74,7 @@ app.include_router(db_health_router)
 app.include_router(auth_router)
 app.include_router(config_router)
 app.include_router(products_router)
+app.include_router(products_grouped_router)
 app.include_router(users_router)
 app.include_router(orders_router)
 app.include_router(categories_router)
