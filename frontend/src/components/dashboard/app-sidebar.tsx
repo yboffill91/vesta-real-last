@@ -296,7 +296,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             className="p-px object-contain rounded-lg bg-slate-950 min-h-6 min-w-6"
           />
           <div>
-            <h3 className="text-sm font-semibold">VestaSys</h3>
+            <h3 className="text-sm font-semibold">Vesta Manager</h3>
             <p className="text-[.6rem]">
               {new Date().getFullYear()}&nbsp;Tecnotics S.I. S.U.R.L
             </p>

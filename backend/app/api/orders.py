@@ -165,9 +165,6 @@ async def create_order(
             detail="No se pudo crear la orden"
         )
     
-    # Update order total using stored procedure
-    Order.update_total(new_order_id)
-    
     # Update service spot status
     ServiceSpot.update_status(order.service_spot_id, "pedido_abierto")
     
@@ -180,10 +177,26 @@ async def create_order(
             detail="Order created but failed to retrieve details"
         )
     
+    import json
+    from decimal import Decimal
+
+    # Decodifica items si es string
+    if created_order.get("items") and isinstance(created_order["items"], str):
+        created_order["items"] = json.loads(created_order["items"])
+    else:
+        created_order["items"] = []
+
+    # Convierte Decimal a float
+    for k in ["total_amount", "tax_amount"]:
+        if isinstance(created_order.get(k), Decimal):
+            created_order[k] = float(created_order[k])
+
     # Convert to response model
     order_response = OrderResponse(
         id=created_order["id"],
         service_spot_id=created_order["service_spot_id"],
+        sales_area_id=created_order["sales_area_id"],
+        menu_id=created_order["menu_id"],
         status=created_order["status"],
         total_amount=created_order["total_amount"],
         tax_amount=created_order["tax_amount"],
@@ -513,6 +526,8 @@ async def add_order_item(
             detail="Cannot modify a closed order"
         )
     
+    # Log the payload recibido
+    logger.info(f"Payload recibido en add_order_item: {item}")
     # Create the order item
     item_data = item.dict()
     item_data["order_id"] = order_id

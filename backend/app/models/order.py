@@ -92,7 +92,18 @@ class Order(BaseModel):
         results = cls.execute_custom_query(
             """
             SELECT 
-                o.*,
+                o.id,
+                o.service_spot_id,
+                o.sales_area_id,
+                o.menu_id,
+                o.status,
+                o.total_amount,
+                o.tax_amount,
+                o.created_by,
+                o.closed_by,
+                o.created_at,
+                o.updated_at,
+                o.closed_at,
                 u_created.username as created_by_username,
                 u_closed.username as closed_by_username,
                 ss.name as service_spot_name,
@@ -123,6 +134,7 @@ class Order(BaseModel):
             """,
             (order_id,)
         )
+        print(f"DEBUG get_with_items result: {results}")
         
         return results[0] if results else None
     

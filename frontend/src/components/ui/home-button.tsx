@@ -28,7 +28,7 @@ export const HomeButton = () => {
         className="inline-flex items-center"
       >
         <Image src={"/logo.webp"} width={32} height={32} alt="VestaSys" />
-        <h3>VestaSys</h3>
+        <h3>Vesta Manager</h3>
       </Button>
     </div>
   );
