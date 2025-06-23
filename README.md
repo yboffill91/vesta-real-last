@@ -1,6 +1,6 @@
 # Vesta - Sistema de Gestión para Establecimientos
 
-![Vesta Logo](https://via.placeholder.com/250x60?text=Vesta)
+![Vesta Logo](/frontend/public/logo.webp)
 
 ## Descripción | Description
 
@@ -83,9 +83,9 @@ The system is developed with a modern architecture that clearly separates the ba
 
 ## Licencia | License
 
-Este proyecto se distribuye bajo licencia libre. Siéntete libre de clonar, modificar y utilizar este código como desees para tus propios proyectos. No se requiere atribución.
+Este proyecto se distribuye bajo licencia libre. Siéntete libre de clonar, modificar y utilizar este código como desees para tus propios proyectos. Por favor menciona al autor si utilizas el código.
 
-This project is distributed under a free license. Feel free to clone, modify, and use this code as you wish for your own projects. No attribution required.
+This project is distributed under a free license. Feel free to clone, modify, and use this code as you wish for your own projects. Please mention the author if you use the code.
 
 ## Autor | Author
 
