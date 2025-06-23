@@ -46,7 +46,7 @@ The system is developed with a modern architecture that clearly separates the ba
 
 1. Clona el repositorio:
    ```bash
-   git clone <url-del-repositorio>
+   git clone https://github.com/yboffill91/vesta-real-last
    cd vesta-real
    ```
 
