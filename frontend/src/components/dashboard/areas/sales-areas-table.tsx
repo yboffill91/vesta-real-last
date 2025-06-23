@@ -11,9 +11,17 @@ import { Button } from "@/components/ui/Buttons";
 
 export default function SalesAreasTable() {
   const { areas, loading, error } = useSalesAreas();
-  const [deleteTarget, setDeleteTarget] = useState<null | { id: number; name: string }>(null);
+  const [deleteTarget, setDeleteTarget] = useState<null | {
+    id: number;
+    name: string;
+  }>(null);
   const [showError, setShowError] = useState(false);
-  const { deleteSalesArea, loading: deleting, error: deleteError, success: deleteSuccess } = useDeleteSalesArea();
+  const {
+    deleteSalesArea,
+    loading: deleting,
+    error: deleteError,
+    success: deleteSuccess,
+  } = useDeleteSalesArea();
   const router = useRouter();
 
   if (loading) return <div>Cargando áreas de venta...</div>;

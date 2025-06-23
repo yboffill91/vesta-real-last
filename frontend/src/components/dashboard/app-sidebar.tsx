@@ -19,6 +19,8 @@ import {
   Store,
   Map,
   LayoutGrid,
+  Table,
+  MapPin,
 } from "lucide-react";
 
 // import { NavUser } from "@/modules/dashboard/components";
@@ -157,22 +159,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           icon: Plus,
           isActive: isActive("/dashboard/areas/add"),
         },
-      ],
-    },
-    {
-      title: "Puestos de Servicio",
-      url: "/dashboard/spots",
-      icon: Map,
-      isActive: isActive("/dashbboard/spots"),
-      items: [
         {
-          title: "Agregar Área de Servicio",
+          title: "Puestos de Servicio",
+          url: "/dashboard/spots",
+          icon: MapPin,
+          isActive: isActive("/dashboard/spots"),
+        },
+        {
+          title: "Agregar Puesto de Servicio",
           url: "/dashboard/spots/add",
           icon: Plus,
           isActive: isActive("/dashboard/spots/add"),
         },
       ],
     },
+
     {
       title: "Productos",
       url: "/dashboard/products",
@@ -230,7 +231,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       collapsible="icon"
       variant="floating"
       {...props}
-      className="bg-sidebar-background"
+      className="bg-sidebar-background "
     >
       <SidebarHeader>
         <UserNav />
