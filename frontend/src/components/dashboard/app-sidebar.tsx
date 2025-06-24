@@ -181,6 +181,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       isActive: isActive("/dashbboard/products"),
       items: [
         {
+          title: "Productos",
+          url: "/dashboard/products/",
+          icon: List,
+          isActive: isActive("/dashboard/products/"),
+        },
+        {
           title: "Agregar Productos",
           url: "/dashboard/products/add",
           icon: Plus,

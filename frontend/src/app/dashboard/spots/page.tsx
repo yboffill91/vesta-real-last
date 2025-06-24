@@ -1,21 +1,32 @@
+"use client";
+
 import { SpotsServicesTables } from "@/components/dashboard/spots/SpotsServicesTables";
-import React from "react";
-import { FormWrapper, Button } from "@/components/ui";
-import { Plus } from "lucide-react";
-import Link from "next/link";
+import { ServiceSpotCreateForm } from "@/components/dashboard/spots/ServiceSpotCreateForm";
+import React, { useState } from "react";
+import { FormWrapper } from "@/components/ui";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const ServicesPotsPage = () => {
+  const [activeTab, setActiveTab] = useState("list");
+
   return (
     <FormWrapper title="Gestión de Puestos de Servicio">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Puestos disponibles</h2>
-        <Link href="/dashboard/spots/add">
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" /> Crear Puesto
-          </Button>
-        </Link>
-      </div>
-      <SpotsServicesTables />
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="list">Lista de Puestos</TabsTrigger>
+          <TabsTrigger value="create">Crear Nuevo Puesto</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="list" className="mt-2">
+          <SpotsServicesTables />
+        </TabsContent>
+
+        <TabsContent value="create" className="mt-2">
+          <div className=" rounded-md shadow p-4">
+            <ServiceSpotCreateForm />
+          </div>
+        </TabsContent>
+      </Tabs>
     </FormWrapper>
   );
 };

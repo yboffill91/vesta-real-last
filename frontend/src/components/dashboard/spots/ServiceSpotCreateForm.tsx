@@ -1,28 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { z } from "zod";
+import { Loader2 } from "lucide-react";
 
+import { FormWrapper } from "@/components/ui";
+import { Form } from "@/components/ui/Form";
+import { RootInput } from "@/components/ui/root-input";
+import { Button } from "@/components/ui/Buttons";
+import { Separator } from "@/components/ui/Separator";
 import {
-  Form,
-  Button,
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui";
-import { Label } from "@/components/ui";
-import { CardContent, CardFooter } from "@/components/ui";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/Select";
+import { SystemAlert } from "@/components/ui/system-alert";
+
 import { useServiceSpots } from "@/hooks/useServiceSpots";
 import { useSalesAreas } from "@/hooks/useSalesAreas";
 import { CreateServiceSpotDTO } from "@/hooks/useServiceSpots";
-import { InputWithLabel } from "./InputWithLabel";
 
 // Schema de validación para el formulario
 const serviceSpotSchema = z.object({
@@ -39,14 +40,16 @@ export function ServiceSpotCreateForm() {
   const { createServiceSpot } = useServiceSpots();
   const { areas, loading: loadingAreas } = useSalesAreas();
 
-  // Estados para el diálogo de alerta
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [dialogMessage, setDialogMessage] = useState("");
+  // Estados para alertas y carga
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [successAlert, setSuccessAlert] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   // Configuración del formulario siguiendo la convención establecida
   const methods = useForm<FormValues>({
     resolver: zodResolver(serviceSpotSchema),
+    mode: "onBlur",
     defaultValues: {
       name: "",
       description: "",
@@ -59,126 +62,154 @@ export function ServiceSpotCreateForm() {
     handleSubmit,
     register,
     formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    reset,
   } = methods;
 
   const onSubmit = async (data: FormValues) => {
+    setServerError(null);
+    setLoading(true);
+
     try {
       const response = await createServiceSpot(data as CreateServiceSpotDTO);
-      if (response.success) {
-        setIsSuccess(true);
-        setDialogMessage("Puesto de servicio creado exitosamente.");
-        setDialogOpen(true);
-      } else {
-        setIsSuccess(false);
-        setDialogMessage(
-          response.error || "Error al crear el puesto de servicio."
+
+      if (!response.success) {
+        setServerError(
+          response.error || "Error al crear el puesto de servicio"
         );
-        setDialogOpen(true);
+        setShowAlert(true);
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      setIsSuccess(false);
-      setDialogMessage("Error al procesar la solicitud.");
-      setDialogOpen(true);
+
+      reset();
+      setSuccessAlert(true);
+      setShowAlert(true);
+      setLoading(false);
+    } catch (error: any) {
+      setServerError(error?.message || "Error de red");
+      setShowAlert(true);
+      setLoading(false);
     }
   };
 
-  const handleClose = () => {
-    setDialogOpen(false);
-    if (isSuccess) {
-      router.push("/dashboard/spots");
-    }
+  const handleSuccess = () => {
+    router.push("/dashboard/spots");
   };
 
   return (
     <>
-      <FormProvider {...methods}>
-        <Form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <InputWithLabel
-                id="name"
-                label="Nombre"
-                placeholder="Mesa 1, Barra 2, etc."
-                {...register("name")}
-                error={errors.name?.message}
-              />
-            </div>
+      <SystemAlert
+        open={showAlert}
+        setOpen={setShowAlert}
+        title={successAlert ? "Puesto creado" : "Error al crear puesto"}
+        description={
+          successAlert
+            ? "El puesto de servicio se creó correctamente."
+            : serverError || "Ocurrió un error inesperado."
+        }
+        confirmText="Aceptar"
+        variant={successAlert ? "default" : "destructive"}
+        onConfirm={() => {
+          setShowAlert(false);
+          setServerError(null);
+          if (successAlert) {
+            handleSuccess();
+          }
+          setSuccessAlert(false);
+        }}
+      />
 
-            <div className="space-y-2">
-              <InputWithLabel
-                id="description"
-                label="Descripción (opcional)"
-                placeholder="Descripción del puesto"
-                {...register("description")}
-                error={errors.description?.message}
-              />
-            </div>
+      <FormWrapper
+        title="Agregar puesto de servicio"
+        subtitle="Complete los datos para crear un nuevo puesto de servicio"
+      >
+        <Form {...methods}>
+          <form
+            className="flex flex-col gap-6"
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            <RootInput
+              label="Nombre"
+              htmlFor="name"
+              error={errors.name?.message}
+              {...register("name")}
+              placeholder="Ej: Mesa 1, Barra 2"
+            />
 
-            <div className="space-y-2">
-              <InputWithLabel
-                id="capacity"
-                type="number"
-                label="Capacidad"
-                placeholder="Número de personas"
-                min="1"
-                {...register("capacity")}
-                error={errors.capacity?.message}
-              />
-            </div>
+            <RootInput
+              label="Descripción (opcional)"
+              htmlFor="description"
+              error={errors.description?.message}
+              {...register("description")}
+              placeholder="Ej: Mesa en área de fumadores"
+            />
 
-            <div className="space-y-2">
-              <div className="grid gap-2">
-                <Label htmlFor="sales_area_id">Área de venta</Label>
-                <select
-                  id="sales_area_id"
-                  disabled={loadingAreas}
-                  className="flex h-9 w-full rounded-md border border-foreground/20 bg-primary/5 px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                  {...register("sales_area_id")}
-                >
-                  <option value="">Selecciona un área de venta</option>
+            <RootInput
+              label="Capacidad"
+              htmlFor="capacity"
+              type="number"
+              min="1"
+              error={errors.capacity?.message}
+              {...register("capacity")}
+              placeholder="Ej: 4"
+            />
+
+            <div>
+              <label
+                className="block text-sm font-medium mb-1"
+                htmlFor="sales_area_id"
+              >
+                Área de venta
+              </label>
+              <Select
+                value={watch("sales_area_id")?.toString() || ""}
+                onValueChange={(value) =>
+                  setValue("sales_area_id", parseInt(value))
+                }
+                name="sales_area_id"
+                disabled={loadingAreas}
+              >
+                <SelectTrigger id="sales_area_id">
+                  <SelectValue placeholder="Selecciona un área de venta" />
+                </SelectTrigger>
+                <SelectContent>
                   {areas.map((area) => (
-                    <option key={area.id} value={area.id}>
+                    <SelectItem key={area.id} value={area.id.toString()}>
                       {area.name}
-                    </option>
+                    </SelectItem>
                   ))}
-                </select>
-                {errors.sales_area_id && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {errors.sales_area_id.message}
-                  </p>
-                )}
-              </div>
+                </SelectContent>
+              </Select>
+              {errors.sales_area_id && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.sales_area_id.message}
+                </p>
+              )}
             </div>
-          </CardContent>
 
-          <CardFooter className="flex justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push("/dashboard/spots")}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creando..." : "Crear puesto"}
-            </Button>
-          </CardFooter>
+            <div className="flex  mt-4">
+              <Button
+                type="submit"
+                disabled={isSubmitting || loading}
+                className="w-full"
+              >
+                {isSubmitting || loading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span className="ml-2">Creando puesto...</span>
+                  </>
+                ) : (
+                  "Crear puesto"
+                )}
+              </Button>
+            </div>
+
+            <Separator />
+          </form>
         </Form>
-      </FormProvider>
-
-      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {isSuccess ? "Operación exitosa" : "Error"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>{dialogMessage}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={handleClose}>Aceptar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      </FormWrapper>
     </>
   );
 }
