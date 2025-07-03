@@ -11,6 +11,9 @@ importers:
       '@radix-ui/react-tabs':
         specifier: ^1.1.11
         version: 1.1.11(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      js-cookie:
+        specifier: ^3.0.5
+        version: 3.0.5
 
 packages:
 
@@ -163,6 +166,10 @@ packages:
       '@types/react':
         optional: true
 
+  js-cookie@3.0.5:
+    resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
+    engines: {node: '>=14'}
+
   react-dom@19.1.0:
     resolution: {integrity: sha512-Xs1hdnE+DyKgeHJeJznQmYMIBG3TKIHJJT95Q58nHLSrElKlGQqDTR2HQ9fx5CN/Gk6Vh/kupBTDLU11/nDk/g==}
     peerDependencies:
@@ -268,6 +275,8 @@ snapshots:
   '@radix-ui/react-use-layout-effect@1.1.1(react@19.1.0)':
     dependencies:
       react: 19.1.0
+
+  js-cookie@3.0.5: {}
 
   react-dom@19.1.0(react@19.1.0):
     dependencies:

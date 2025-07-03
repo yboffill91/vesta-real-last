@@ -35,12 +35,12 @@ export const TokenRenewalAlert: React.FC<TokenRenewalAlertProps> = ({
       title="Renovación de sesión requerida"
       customDescription={
         <>
-          <div className="mb-2">
+          <span className="mb-2 block">
             Por seguridad, debes reingresar tu contraseña para mantener tu
             sesión activa.
             <br />
             Intentos restantes: {3 - attempts}
-          </div>
+          </span>
           <RootInput
             label="Contraseña"
             htmlFor="renew-password"
