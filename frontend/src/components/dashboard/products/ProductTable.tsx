@@ -13,7 +13,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectGroup
+  SelectGroup,
 } from "@/components/ui/Select";
 import { SystemAlert } from "@/components/ui/system-alert";
 import { Pencil, Trash, ToggleLeft, ToggleRight, Search } from "lucide-react";
@@ -23,11 +23,13 @@ import { ToggleButton } from "@/components/ui/ToggleButton";
 export const ProductTable = () => {
   const {
     products,
-    loading,
-    error,
+    productCategories,
+    loading: productsLoading,
     fetchProducts,
-    deleteProduct,
     updateProductAvailability,
+    deleteProduct,
+    getCategoryForProduct,
+    error,
   } = useProducts();
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -53,7 +55,6 @@ export const ProductTable = () => {
     }
   }, [products]);
 
-  // Aplicar filtros
   useEffect(() => {
     if (!products.length) return;
 
@@ -165,23 +166,23 @@ export const ProductTable = () => {
         onCancel={() => setShowConfirmDelete(false)}
       />
 
-      {loading && <div className="text-center py-4">Cargando productos...</div>}
+      {productsLoading && (
+        <div className="text-center py-4">Cargando productos...</div>
+      )}
 
       {error && (
-        <div className="text-destructive bg-destructive/10 p-3 rounded-md">
-          {error}
+        <div className="rounded-md bg-destructive/15 p-3 text-destructive mb-4">
+          Error: {error}
         </div>
       )}
 
-      {!loading && !error && filteredProducts.length === 0 && (
-        <div className="text-center py-8 bg-muted/50 rounded-md">
-          <p className="text-muted-foreground">
-            No se encontraron productos{nameFilter ? " con ese nombre" : ""}
-          </p>
+      {!productsLoading && !error && filteredProducts.length === 0 && (
+        <div className="flex justify-center items-center p-8">
+          <p className="text-muted-foreground">No hay productos disponibles</p>
         </div>
       )}
 
-      {!loading && filteredProducts.length > 0 && (
+      {!productsLoading && filteredProducts.length > 0 && (
         <div className="rounded-md border">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-border">
@@ -190,15 +191,11 @@ export const ProductTable = () => {
                   <th className="px-4 py-3 text-left text-sm font-medium">
                     Nombre
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium hidden md:table-cell">
-                    Categoría
-                  </th>
+
                   <th className="px-4 py-3 text-right text-sm font-medium">
                     Precio
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-medium">
-                    Disponible
-                  </th>
+
                   <th className="px-4 py-3 text-center text-sm font-medium">
                     Acciones
                   </th>
@@ -207,33 +204,34 @@ export const ProductTable = () => {
               <tbody className="divide-y divide-border">
                 {filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-muted/50">
-                    <td className="px-4 py-3 text-sm">{product.name}</td>
-                    <td className="px-4 py-3 text-sm hidden md:table-cell">
-                      {product.category_name || "-"}
+                    <td className="px-4 py-3 text-sm flex flex-col leading-tight">
+                      <h3 className="text-lg font-medium"> {product.name} </h3>
+                      <h4 className="text-sm font-thin text-muted-foreground">
+                        {product.category_id
+                          ? getCategoryForProduct(product.category_id)?.name ||
+                            product.category_name ||
+                            "Sin Categoría"
+                          : "Sin Categoría"}
+                      </h4>
                     </td>
                     <td className="px-4 py-3 text-sm text-right">
                       ${product.price.toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-center">
-                      <ToggleButton
-                        checked={product.is_available}
-                        onCheckedChange={() =>
-                          handleAvailabilityToggle(
-                            product.id,
-                            product.is_available
-                          )
-                        }
-                        activeIcon={
-                          <ToggleRight className="text-secondary-foreground" />
-                        }
-                        inactiveIcon={
-                          <ToggleLeft className="text-destructive" />
-                        }
-                        className="h-6 py-0 px-2"
-                      />
-                    </td>
+
                     <td className="px-4 py-3 text-sm">
-                      <div className="flex justify-center gap-2">
+                      <div className="flex justify-center items-center gap-2">
+                        <ToggleButton
+                          checked={product.is_available}
+                          onCheckedChange={() =>
+                            handleAvailabilityToggle(
+                              product.id,
+                              product.is_available
+                            )
+                          }
+                          activeIcon={<ToggleRight />}
+                          inactiveIcon={<ToggleLeft />}
+                          className="size-8"
+                        />
                         <Button
                           variant="outline"
                           size="sm"

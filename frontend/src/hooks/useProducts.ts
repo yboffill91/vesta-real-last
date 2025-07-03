@@ -1,9 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { fetchApi, getAuthToken } from '@/lib/api';
 import { Product, CreateProductRequest, UpdateProductRequest, ProductAvailabilityRequest } from '@/models/product';
+import { Category } from '@/models/category';
 
 interface UseProductsReturn {
   products: Product[];
+  productCategories: Map<number, Category>;
   loading: boolean;
   error: string | null;
   fetchProducts: () => Promise<Product[]>;
@@ -12,6 +14,7 @@ interface UseProductsReturn {
   updateProduct: (id: number, data: UpdateProductRequest) => Promise<Product | null>;
   deleteProduct: (id: number) => Promise<boolean>;
   updateProductAvailability: (id: number, data: ProductAvailabilityRequest) => Promise<Product | null>;
+  getCategoryForProduct: (categoryId: number | undefined | null) => Category | undefined;
 }
 
 // Interfaces para las respuestas API para garantizar tipos seguros
@@ -39,8 +42,60 @@ type ApiProductSingleResponse = ApiResponse<Product>;
  */
 export function useProducts(): UseProductsReturn {
   const [products, setProducts] = useState<Product[]>([]);
+  const [productCategories, setProductCategories] = useState<Map<number, Category>>(new Map());
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Función para obtener los detalles de una categoría por su ID
+  const fetchCategoryDetails = async (categoryId: number): Promise<Category | null> => {
+    try {
+      const response = await fetchApi<ServerResponse<Category>>(`/api/v1/categories/${categoryId}`);
+      
+      if (response.success && response.data && response.data.data) {
+        return response.data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error(`Error al obtener detalles de la categoría ${categoryId}:`, error);
+      return null;
+    }
+  };
+  
+  // Función para cargar los detalles de las categorías para los productos
+  const loadCategoriesForProducts = async (productsList: Product[]) => {
+    // Crear un Set con los IDs de categorías para eliminar duplicados
+    const categoryIds = new Set<number>();
+    
+    // Recopilar todos los IDs de categorías únicos
+    productsList.forEach(product => {
+      if (product.category_id) {
+        categoryIds.add(product.category_id);
+      }
+    });
+    
+    // Crear un mapa temporal para almacenar las categorías obtenidas
+    const categoriesMap = new Map<number, Category>();
+    
+    // Obtener los detalles de cada categoría
+    const fetchPromises = Array.from(categoryIds).map(async (categoryId) => {
+      const categoryDetails = await fetchCategoryDetails(categoryId);
+      if (categoryDetails) {
+        categoriesMap.set(categoryId, categoryDetails);
+      }
+    });
+    
+    // Esperar a que se completen todas las solicitudes
+    await Promise.all(fetchPromises);
+    
+    // Actualizar el estado con las categorías obtenidas
+    setProductCategories(categoriesMap);
+  };
+  
+  // Función para obtener la categoría de un producto
+  const getCategoryForProduct = (categoryId: number | undefined | null): Category | undefined => {
+    if (!categoryId) return undefined;
+    return productCategories.get(categoryId);
+  };
 
   /**
    * Obtiene todos los productos del API
@@ -59,6 +114,10 @@ export function useProducts(): UseProductsReturn {
         const productList = responseData.data || [];
         
         setProducts(productList);
+        
+        // Cargar los detalles completos de las categorías
+        await loadCategoriesForProducts(productList);
+        
         return productList;
       } 
       
@@ -296,8 +355,16 @@ export function useProducts(): UseProductsReturn {
     }
   }, []);
 
+  // useEffect para cargar las categorías cuando cambian los productos
+  useEffect(() => {
+    if (products.length > 0) {
+      loadCategoriesForProducts(products);
+    }
+  }, [products]);
+
   return {
     products,
+    productCategories,
     loading,
     error,
     fetchProducts,
@@ -306,5 +373,6 @@ export function useProducts(): UseProductsReturn {
     updateProduct,
     deleteProduct,
     updateProductAvailability,
+    getCategoryForProduct,
   };
 }

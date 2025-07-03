@@ -14,6 +14,7 @@ interface ToggleButtonProps {
   activeText?: string;
   inactiveText?: string;
   className?: string;
+  size?: "default" | "sm" | "lg" | "icon";
 }
 
 export function ToggleButton({
@@ -25,14 +26,16 @@ export function ToggleButton({
   activeText,
   inactiveText,
   className,
+  size = "default",
 }: ToggleButtonProps) {
   return (
     <Button
       id={id}
       type="button"
-      variant={checked ? "secondary" : "outline"}
+      variant={checked ? "outline" : "destructive"}
       onClick={() => onCheckedChange(!checked)}
       className={cn("flex items-center gap-2", className)}
+      size={size}
     >
       {checked ? activeIcon : inactiveIcon}
       {checked ? activeText : inactiveText}
