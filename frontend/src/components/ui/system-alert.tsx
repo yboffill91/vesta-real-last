@@ -22,6 +22,7 @@ type SystemAlertProps = {
   title: string;
   description?: string;
   customDescription?: React.ReactNode;
+  customContent?: React.ReactNode;
   confirmText?: string;
   cancelText?: string;
   onConfirm?: () => void;
@@ -36,6 +37,7 @@ export function SystemAlert({
   title,
   description,
   customDescription,
+  customContent,
   confirmText = "OK",
   cancelText,
   onConfirm,
@@ -86,6 +88,13 @@ export function SystemAlert({
             {customDescription ?? description}
           </AlertDialogDescription>
         </AlertDialogHeader>
+        
+        {customContent && (
+          <div className="py-2">
+            {customContent}
+          </div>
+        )}
+        
         <AlertDialogFooter>
           {cancelText && (
             <AlertDialogCancel onClick={handleCancel}>
