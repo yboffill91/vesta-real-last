@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { DashboardCards } from "@/components/ui";
+import { DashboardCards, FormWrapper } from "@/components/ui";
 import { DashboardCardAlert } from "@/components/ui/dashboar-card-alert";
 import { useSalesAreas } from "@/hooks/useSalesAreas";
 import { useDeleteSalesArea } from "@/hooks/useDeleteSalesArea";
@@ -97,7 +97,7 @@ export default function SalesAreasTable() {
         }}
         onCancel={() => setDeleteTarget(null)}
       />
-      <DashboardCards title="Áreas de Venta" icon={Store}>
+      <FormWrapper title="Áreas de Venta">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
@@ -146,7 +146,7 @@ export default function SalesAreasTable() {
             </tbody>
           </table>
         </div>
-      </DashboardCards>
+      </FormWrapper>
     </>
   );
 }

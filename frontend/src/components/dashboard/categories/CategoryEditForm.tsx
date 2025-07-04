@@ -10,16 +10,14 @@ import { RootInput } from "@/components/ui/root-input";
 import { Button } from "@/components/ui/Buttons";
 import { Separator } from "@/components/ui/Separator";
 import { SystemAlert } from "@/components/ui/system-alert";
-import { Loader2, CheckCircle, XCircle, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCategories } from "@/hooks/useCategories";
 import { Category } from "@/models/category";
-import { ToggleButton } from "@/components/ui/ToggleButton";
 
 // Definir explícitamente el tipo de los valores del formulario para evitar problemas de tipado
 type CategoryFormValues = {
   name: string;
-  is_active: boolean;
   description?: string;
 };
 
@@ -32,8 +30,7 @@ const categorySchema = z.object({
     .string()
     .max(200, "La descripción no puede exceder los 200 caracteres")
     .optional()
-    .or(z.literal("")),
-  is_active: z.boolean().default(true),
+    .or(z.literal(""))
 });
 
 export function CategoryEditForm({ categoryId }: { categoryId: number }) {
@@ -53,8 +50,7 @@ export function CategoryEditForm({ categoryId }: { categoryId: number }) {
     mode: "onBlur",
     defaultValues: {
       name: "",
-      description: "",
-      is_active: true,
+      description: ""
     },
   });
 
@@ -78,7 +74,6 @@ export function CategoryEditForm({ categoryId }: { categoryId: number }) {
           // Actualizar el formulario con los datos
           setValue("name", data.name);
           setValue("description", data.description || "");
-          setValue("is_active", data.is_active);
         } else {
           setServerError("No se encontró la categoría");
           setShowAlert(true);
@@ -108,7 +103,7 @@ export function CategoryEditForm({ categoryId }: { categoryId: number }) {
       const result = await updateCategory(categoryId, {
         name: data.name,
         description: data.description,
-        is_active: data.is_active,
+        is_active: true, // Siempre activa
       });
 
       if (!result) {
@@ -130,7 +125,7 @@ export function CategoryEditForm({ categoryId }: { categoryId: number }) {
     }
   };
 
-  const isActive = watch("is_active");
+
 
   if (initialLoading) {
     return (
@@ -204,21 +199,7 @@ export function CategoryEditForm({ categoryId }: { categoryId: number }) {
                 </p>
               )}
             </div>
-            <div className="flex items-center space-x-2">
-              <ToggleButton
-                id="is_active"
-                checked={isActive}
-                onCheckedChange={(checked: boolean) =>
-                  setValue("is_active", checked)
-                }
-                activeIcon={
-                  <CheckCircle size={16} className="text-green-500" />
-                }
-                inactiveIcon={<XCircle size={16} className="text-red-500" />}
-                activeText="Categoría activa"
-                inactiveText="Categoría inactiva"
-              />
-            </div>
+
 
             <Button
               type="submit"

@@ -19,53 +19,51 @@ export const CategoryTable = () => {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const router = useRouter();
 
-  // Estado para filtros
+  // Estados para filtros
   const [nameFilter, setNameFilter] = useState("");
-  const [activeFilter, setActiveFilter] = useState<string>("all");
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
-  
+
   // Cargar categorías solo una vez al montar el componente
   useEffect(() => {
     fetchCategories();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  
+
   // Eliminar duplicados por nombre y sincronizar con filteredCategories
   useEffect(() => {
     if (categories && Array.isArray(categories)) {
       // Creamos un Map para eliminar duplicados por nombre
       const uniqueCategories = Array.from(
-        new Map(categories.map(cat => [cat.name, cat])).values()
+        new Map(categories.map((cat) => [cat.name, cat])).values()
       );
-      console.log('Categorías únicas:', uniqueCategories.length, 'de', categories.length, 'originales');
+      console.log(
+        "Categorías únicas:",
+        uniqueCategories.length,
+        "de",
+        categories.length,
+        "originales"
+      );
       setFilteredCategories(uniqueCategories);
     }
   }, [categories]);
 
-  // Aplicar filtros
+  // Efecto para filtrar categorías
   useEffect(() => {
-    if (!categories.length) return;
+    if (!categories.length) {
+      setFilteredCategories([]);
+      return;
+    }
 
     let filtered = [...categories];
 
     // Filtrar por nombre
-    if (nameFilter.trim()) {
-      const searchTerm = nameFilter.toLowerCase().trim();
-      filtered = filtered.filter(
-        (cat) =>
-          cat.name.toLowerCase().includes(searchTerm) ||
-          (cat.description &&
-            cat.description.toLowerCase().includes(searchTerm))
+    if (nameFilter) {
+      filtered = filtered.filter((cat) =>
+        cat.name.toLowerCase().includes(nameFilter.toLowerCase())
       );
     }
 
-    // Filtrar por estado activo/inactivo
-    if (activeFilter !== "all") {
-      const isActive = activeFilter === "active";
-      filtered = filtered.filter((cat) => cat.is_active === isActive);
-    }
-
     setFilteredCategories(filtered);
-  }, [nameFilter, activeFilter, categories]);
+  }, [nameFilter, categories]);
 
   // Manejar eliminación
   const handleDelete = async () => {
@@ -97,7 +95,6 @@ export const CategoryTable = () => {
   // Limpiar filtros
   const clearFilters = () => {
     setNameFilter("");
-    setActiveFilter("all");
   };
 
   if (loading && !categories.length) {
@@ -142,7 +139,7 @@ export const CategoryTable = () => {
 
       <DashboardCards title="Categorías de Productos" icon={Layers}>
         {/* Filtros */}
-        <div className="mb-4 flex flex-col md:flex-row gap-4">
+        <div className="mb-4 flex flex-col md:flex-row gap-4 items-center justify-evenly">
           <div className="w-full md:w-1/2">
             <RootInput
               label="Buscar por nombre"
@@ -155,21 +152,20 @@ export const CategoryTable = () => {
             />
           </div>
 
+          <Button
+            onClick={() => router.push("/dashboard/products/categories/add")}
+            className="flex gap-2 items-center"
+            variant="default"
+          >
+            <PlusCircle size={16} />
+            Añadir Categoría
+          </Button>
+
           {/* Botón para añadir categoría */}
-          <div>
-            <Button
-              onClick={() => router.push("/dashboard/products/categories/add")}
-              className="flex gap-2 items-center"
-              variant="default"
-            >
-              <PlusCircle size={16} />
-              Añadir
-            </Button>
-          </div>
         </div>
 
         {/* Contador de resultados y botón para limpiar filtros */}
-        {(nameFilter || activeFilter !== "all") && (
+        {nameFilter && (
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-muted-foreground">
               Mostrando {filteredCategories.length} de {categories.length}{" "}
@@ -213,12 +209,7 @@ export const CategoryTable = () => {
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Nombre
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Descripción
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Estado
-                  </th>
+
                   <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Acciones
                   </th>
@@ -227,46 +218,28 @@ export const CategoryTable = () => {
               <tbody className="divide-y divide-gray-200">
                 {filteredCategories.map((category) => (
                   <tr key={category.id}>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                      {category.name}
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium flex flex-col">
+                      <h3 className="text-lg font-medium"> {category.name}</h3>
+
+                      <h4 className="text-sm text-muted-foreground">
+                        {" "}
+                        {category.description || (
+                          <span className="text-muted-foreground italic">
+                            Sin descripción
+                          </span>
+                        )}
+                      </h4>
                     </td>
-                    <td className="px-4 py-3 text-sm">
-                      {category.description || (
-                        <span className="text-muted-foreground italic">
-                          Sin descripción
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-center">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          category.is_active
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {category.is_active ? "Activo" : "Inactivo"}
-                      </span>
-                    </td>
+
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
                       <div className="flex justify-center gap-2">
-                        <button
+                        <Button
                           onClick={() => handleEdit(category.id)}
-                          className="text-blue-600 hover:text-blue-800"
+                          variant="ghost"
                           title="Editar"
                         >
                           <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDeleteId(category.id);
-                            setShowConfirmDelete(true);
-                          }}
-                          className="text-red-600 hover:text-red-800"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>

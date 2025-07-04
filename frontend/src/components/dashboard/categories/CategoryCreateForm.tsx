@@ -10,10 +10,9 @@ import { RootInput } from "@/components/ui/root-input";
 import { Button } from "@/components/ui/Buttons";
 import { Separator } from "@/components/ui/Separator";
 import { SystemAlert } from "@/components/ui/system-alert";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useEstablishmentStore } from "@/lib/establishment";
 import { useCategories } from "@/hooks/useCategories";
-import { ToggleButton } from "@/components/ui/ToggleButton";
 
 // Definir el esquema de validación con Zod
 const categorySchema = z.object({
@@ -25,8 +24,7 @@ const categorySchema = z.object({
     .string()
     .max(200, "La descripción no puede exceder los 200 caracteres")
     .optional()
-    .or(z.literal("")),
-  is_active: z.boolean().default(true),
+    .or(z.literal(""))
 });
 
 // Tipo inferido del esquema
@@ -46,8 +44,7 @@ export function CategoryCreateForm({ onSuccess }: { onSuccess?: () => void }) {
     mode: "onBlur",
     defaultValues: {
       name: "",
-      description: "",
-      is_active: true,
+      description: ""
     },
   });
 
@@ -69,7 +66,7 @@ export function CategoryCreateForm({ onSuccess }: { onSuccess?: () => void }) {
       const result = await createCategory({
         name: data.name,
         description: data.description,
-        is_active: data.is_active,
+        is_active: true, // Siempre activa
       });
 
       if (!result) {
@@ -92,7 +89,7 @@ export function CategoryCreateForm({ onSuccess }: { onSuccess?: () => void }) {
     }
   };
 
-  const isActive = watch("is_active");
+
 
   return (
     <>
@@ -152,19 +149,7 @@ export function CategoryCreateForm({ onSuccess }: { onSuccess?: () => void }) {
                 </p>
               )}
             </div>
-            <div className="flex items-center space-x-2">
-              <ToggleButton
-                id="is_active"
-                checked={isActive}
-                onCheckedChange={(checked: boolean) =>
-                  setValue("is_active", checked)
-                }
-                activeIcon={<CheckCircle size={16} className="text-green-500" />}
-                inactiveIcon={<XCircle size={16} className="text-red-500" />}
-                activeText="Categoría activa"
-                inactiveText="Categoría inactiva"
-              />
-            </div>
+
 
             <Button
               type="submit"
