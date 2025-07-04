@@ -128,7 +128,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Productos",
       url: "/dashboard/products/",
       icon: List,
-      isActive: isActive("/dashboard/products/"),
+      isActive: isActive("/dashboard/products"),
     },
     {
       title: "Categorías",
@@ -137,10 +137,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       isActive: isActive("/dashboard/products/categories"),
     },
     {
-      title: "Cartas Menú",
-      url: "/dashboard/menu",
+      title: "Menús",
+      url: "/dashboard/menus",
       icon: Store,
-      isActive: isActive("/dashbboard/menu"),
+      isActive: isActive("/dashboard/menus"),
     },
     {
       title: "Órdenes",
@@ -202,7 +202,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       </CollapsibleContent>
                     </>
                   ) : (
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild isActive={item.isActive}>
                       <Link href={item.url} className="flex items-center">
                         {item.icon && <item.icon />}
                         <span>{item.title}</span>

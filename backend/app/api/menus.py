@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from app.utils.auth_middleware import require_admin, require_dependiente
 from app.schemas.menu import (
     MenuCreate, MenuUpdate, MenuResponse, MenusResponse,
-    MenuDetailResponse, MenuWithItemsResponse, MenuWithItemsDetailResponse
+    MenuDetailResponse, MenuWithItemsResponse, MenuWithItemsDetailResponse,
+    MenuItemCreate, MenuItemResponse
 )
 from app.models.menu import Menu
 from app.models.menu_item import MenuItem
@@ -29,7 +30,7 @@ router = APIRouter(
 @router.get("/", response_model=MenusResponse)
 async def get_menus(
     current_user: dict = Depends(require_dependiente),
-    active_only: bool = True,
+    active_only: bool = False,
     sales_area_id: Optional[int] = None
 ):
     """
@@ -48,7 +49,7 @@ async def get_menus(
     # Set up filters for query
     where = {}
     if active_only:
-        where["is_active"] = True
+        where["status"] = Menu.STATUS_PUBLISHED
         
     # Get menus from database
     if sales_area_id:
@@ -63,8 +64,8 @@ async def get_menus(
         MenuResponse(
             id=menu['id'],
             name=menu['name'],
-            description=menu['description'],
-            is_active=menu['is_active'],
+            status=menu.get('status', 'borrador'),
+            valid_date=menu['valid_date'],
             created_at=menu.get('created_at'),
             updated_at=menu.get('updated_at')
         ) for menu in db_menus
@@ -120,8 +121,8 @@ async def create_menu(
     menu_response = MenuResponse(
         id=created_menu['id'],
         name=created_menu['name'],
-        description=created_menu['description'],
-        is_active=created_menu['is_active'],
+        status=created_menu.get('status', 'borrador'),
+        valid_date=created_menu['valid_date'],
         created_at=created_menu.get('created_at'),
         updated_at=created_menu.get('updated_at')
     )
@@ -149,8 +150,8 @@ async def get_menu(
     """
     logger.info(f"User {current_user['username']} is retrieving menu {menu_id}")
     
-    # Get menu from database
-    db_menu = Menu.find_by_id(menu_id)
+    # Get basic menu information from database
+    db_menu = Menu.get_basic_info(menu_id)
     
     if not db_menu:
         raise HTTPException(
@@ -161,6 +162,22 @@ async def get_menu(
     # Get menu items
     menu_items = MenuItem.get_by_menu_id(menu_id)
     
+    # Debug log
+    logger.info(f"Menu items retrieved for menu {menu_id}: {menu_items}")
+    
+    # Format menu items for response
+    formatted_items = []
+    for item in menu_items:
+        formatted_items.append({
+            "id": item["id"],
+            "product_id": item["product_id"],
+            "product_name": item["product_name"],
+            "price": item["price"],
+            "is_available": item["is_available"],
+            "category_id": item.get("category_id", 0),  # Default value if not present
+            "category_name": item.get("category_name", "")  # Default value if not present
+        })
+    
     # Get sales areas
     sales_areas = Menu.get_assigned_sales_areas(menu_id)
     
@@ -168,10 +185,10 @@ async def get_menu(
     menu_response = MenuWithItemsResponse(
         id=db_menu['id'],
         name=db_menu['name'],
-        description=db_menu['description'],
-        is_active=db_menu['is_active'],
-        items=menu_items,
-        sales_areas=sales_areas,
+        status=db_menu.get('status', 'borrador'),
+        valid_date=db_menu['valid_date'],
+        items=formatted_items,
+        areas=sales_areas,
         created_at=db_menu.get('created_at'),
         updated_at=db_menu.get('updated_at')
     )
@@ -210,7 +227,7 @@ async def update_menu(
         )
     
     # Update menu data
-    menu_data = {k: v for k, v in menu.dict().items() if v is not None and k != 'sales_area_ids'}
+    menu_data = {k: v for k, v in menu.dict().items() if v is not None}
     
     # Update in database
     success = Menu.update(menu_id, menu_data)
@@ -221,10 +238,6 @@ async def update_menu(
             detail="No se pudo actualizar el menú"
         )
     
-    # Update sales areas if provided
-    if menu.sales_area_ids is not None:
-        Menu.update_sales_areas(menu_id, menu.sales_area_ids)
-    
     # Get the updated menu
     updated_menu = Menu.find_by_id(menu_id)
     
@@ -232,8 +245,8 @@ async def update_menu(
     menu_response = MenuResponse(
         id=updated_menu['id'],
         name=updated_menu['name'],
-        description=updated_menu['description'],
-        is_active=updated_menu['is_active'],
+        status=updated_menu.get('status', 'borrador'),
+        valid_date=updated_menu['valid_date'],
         created_at=updated_menu.get('created_at'),
         updated_at=updated_menu.get('updated_at')
     )
@@ -282,8 +295,8 @@ async def delete_menu(
     menu_response = MenuResponse(
         id=db_menu['id'],
         name=db_menu['name'],
-        description=db_menu['description'],
-        is_active=db_menu['is_active'],
+        status=db_menu.get('status', 'borrador'),
+        valid_date=db_menu['valid_date'],
         created_at=db_menu.get('created_at'),
         updated_at=db_menu.get('updated_at')
     )
@@ -333,4 +346,188 @@ async def assign_menu_to_sales_areas(
     return {
         "status": "success",
         "message": "Menú asignado a las áreas de venta exitosamente"
+    }
+
+@router.patch("/{menu_id}/publish", response_model=MenuDetailResponse)
+async def publish_menu(
+    menu_id: int = Path(..., gt=0),
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Publish a menu (change its status to published).
+    Only accessible to Soporte and Administrador roles.
+    
+    Args:
+        menu_id: The ID of the menu to publish
+        
+    Returns:
+        MenuDetailResponse: The published menu data
+    """
+    logger.info(f"User {current_user['username']} is publishing menu {menu_id}")
+    
+    # Check if menu exists
+    db_menu = Menu.find_by_id(menu_id)
+    if not db_menu:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Menu not found"
+        )
+    
+    # Update status to published
+    success = Menu.update(menu_id, {"status": Menu.STATUS_PUBLISHED})
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo publicar el menú"
+        )
+    
+    # Get the updated menu
+    updated_menu = Menu.find_by_id(menu_id)
+    
+    # Convert to response model
+    menu_response = MenuResponse(
+        id=updated_menu['id'],
+        name=updated_menu['name'],
+        status=updated_menu.get('status', Menu.STATUS_DRAFT),
+        valid_date=updated_menu['valid_date'],
+        created_at=updated_menu.get('created_at'),
+        updated_at=updated_menu.get('updated_at')
+    )
+    
+    return {
+        "status": "success",
+        "message": "Menú publicado exitosamente",
+        "data": menu_response
+    }
+
+@router.patch("/{menu_id}/archive", response_model=MenuDetailResponse)
+async def archive_menu(
+    menu_id: int = Path(..., gt=0),
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Archive a menu (change its status to archived).
+    Only accessible to Soporte and Administrador roles.
+    
+    Args:
+        menu_id: The ID of the menu to archive
+        
+    Returns:
+        MenuDetailResponse: The archived menu data
+    """
+    logger.info(f"User {current_user['username']} is archiving menu {menu_id}")
+    
+    # Check if menu exists
+    db_menu = Menu.find_by_id(menu_id)
+    if not db_menu:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Menu not found"
+        )
+    
+    # Update status to archived
+    success = Menu.update(menu_id, {"status": Menu.STATUS_ARCHIVED})
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo archivar el menú"
+        )
+    
+    # Get the updated menu
+    updated_menu = Menu.find_by_id(menu_id)
+    
+    # Convert to response model
+    menu_response = MenuResponse(
+        id=updated_menu['id'],
+        name=updated_menu['name'],
+        status=updated_menu.get('status', Menu.STATUS_DRAFT),
+        valid_date=updated_menu['valid_date'],
+        created_at=updated_menu.get('created_at'),
+        updated_at=updated_menu.get('updated_at')
+    )
+    
+    return {
+        "status": "success",
+        "message": "Menú archivado exitosamente",
+        "data": menu_response
+    }
+
+@router.post("/{menu_id}/items", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def add_menu_item(
+    menu_item: MenuItemCreate,
+    menu_id: int = Path(..., gt=0),
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Add a product to a menu.
+    Only accessible to Soporte and Administrador roles.
+    
+    Args:
+        menu_id: The ID of the menu to add the product to
+        menu_item: Product data to add to the menu
+        
+    Returns:
+        dict: Success message with the created menu item
+    """
+    logger.info(f"User {current_user['username']} is adding a product to menu {menu_id}")
+    
+    # Check if menu exists
+    db_menu = Menu.find_by_id(menu_id)
+    if not db_menu:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Menú no encontrado"
+        )
+    
+    # Extract data from request
+    product_id = menu_item.product_id
+    price = menu_item.price
+    is_available = menu_item.is_available
+    
+    # Add the item to the menu
+    success = Menu.add_item(menu_id, product_id, price, is_available)
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo añadir el producto al menú"
+        )
+    
+    # Get the created menu item with its database ID
+    # We need to get the last inserted item for this menu and product
+    created_item = MenuItem.find_all(
+        where={"menu_id": menu_id, "product_id": product_id},
+        order_by="id DESC",
+        limit=1
+    )
+    
+    if not created_item:
+        # If we can't find the item (which shouldn't happen), return a structured response with basic information
+        return {
+            "status": "success",
+            "message": "Producto añadido al menú exitosamente, pero no se pudo recuperar el detalle",
+            "data": {
+                "menu_id": menu_id,
+                "product_id": product_id,
+                "price": price,
+                "is_available": is_available
+            }
+        }
+    
+    item_data = created_item[0]
+    
+    return {
+        "status": "success",
+        "message": "Producto añadido al menú exitosamente",
+        "data": {
+            "id": item_data['id'],
+            "menu_id": item_data['menu_id'],
+            "product_id": item_data['product_id'],
+            "price": item_data['price'],
+            "is_available": item_data['is_available'],
+            "created_at": item_data.get('created_at'),
+            "updated_at": item_data.get('updated_at')
+        }
     }

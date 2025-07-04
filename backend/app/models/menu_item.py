@@ -23,9 +23,15 @@ class MenuItem(BaseModel):
         """
         return cls.execute_custom_query(
             """
-            SELECT mi.*, p.name as product_name, p.description as product_description, p.image as product_image 
+            SELECT mi.*, 
+                   p.name as product_name, 
+                   p.description as product_description, 
+                   p.image as product_image,
+                   p.category_id,
+                   pc.name as category_name
             FROM MenuItems mi
             JOIN Products p ON mi.product_id = p.id
+            LEFT JOIN ProductCategories pc ON p.category_id = pc.id
             WHERE mi.menu_id = %s
             ORDER BY p.name ASC
             """,
