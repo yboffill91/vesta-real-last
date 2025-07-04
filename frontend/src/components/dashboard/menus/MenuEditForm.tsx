@@ -6,8 +6,8 @@ import { z } from "zod";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMenus } from "@/hooks/useMenus";
-import { Button, RootInput } from "@/components/ui";
-import { Save, ArrowLeft } from "lucide-react";
+import { Button, RootInput, AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui";
+import { Save, ArrowLeft, Copy } from "lucide-react";
 import { Menu } from "@/models/menu";
 
 // Definición del esquema de validación con Zod
@@ -25,7 +25,7 @@ interface MenuEditFormProps {
 }
 
 export function MenuEditForm({ menuId, onSuccess }: MenuEditFormProps) {
-  const { updateMenu, getMenuById, error } = useMenus();
+  const { updateMenu, getMenuById, duplicateMenu, error } = useMenus();
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -177,7 +177,48 @@ export function MenuEditForm({ menuId, onSuccess }: MenuEditFormProps) {
           <div className="text-green-500 text-sm mt-2">{successMessage}</div>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex justify-between">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex items-center gap-2"
+                disabled={loading}
+              >
+                <Copy size={18} />
+                Duplicar Menú
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Duplicar Menú</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Se creará una copia del menú con todos sus productos. La copia tendrá la fecha de validez de mañana y estará en estado borrador.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const duplicatedMenu = await duplicateMenu(menuId);
+                    if (duplicatedMenu) {
+                      setSuccessMessage("Menú duplicado exitosamente");
+                      setTimeout(() => {
+                        router.push(`/dashboard/menus/edit/${duplicatedMenu.id}`);
+                      }, 1000);
+                    }
+                  } catch (error) {
+                    setServerError("Error al duplicar el menú");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}>Duplicar</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          
           <Button
             type="submit"
             className="flex items-center gap-2"

@@ -60,3 +60,4 @@ yarn-error.log*
 *.swo
 .DS_Store
 /frontend/ToDo.md
+ToDo.md

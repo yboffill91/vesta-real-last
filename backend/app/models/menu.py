@@ -232,19 +232,15 @@ class Menu(BaseModel):
         """
         Assign a menu to multiple sales areas.
         
-        Args:
-            menu_id: The menu ID
-            sales_area_ids: List of sales area IDs
-            
         Returns:
             bool: True if successful, False otherwise
         """
-        if not sales_area_ids:
-            return True
-            
-        # First remove existing assignments
+        # First, remove all existing assignments for this menu
         cls.execute_custom_query(
-            "DELETE FROM MenuSalesAreas WHERE menu_id = %s",
+            """
+            DELETE FROM MenuSalesAreas
+            WHERE menu_id = %s
+            """,
             (menu_id,)
         )
         
@@ -253,5 +249,45 @@ class Menu(BaseModel):
             success = cls.assign_to_area(menu_id, area_id)
             if not success:
                 return False
-                
+                    
         return True
+
+@classmethod
+def cleanup_old_menus(cls) -> int:
+    """
+    Delete menus that are older than 2 days based on validity date.
+    
+    Returns:
+        int: Number of deleted menus
+    """
+    result = cls.execute_custom_query(
+        """
+        DELETE FROM Menus 
+        WHERE DATEDIFF(CURRENT_DATE(), valid_date) > 2
+        """,
+        ()
+    )
+    
+    # Return number of affected rows if available
+    return result.get('affected_rows', 0) if result else 0
+
+@classmethod
+def archive_expired_menus(cls) -> int:
+    """
+    Change status to archived for published menus that are older than 1 day.
+    
+    Returns:
+        int: Number of menus archived
+    """
+    result = cls.execute_custom_query(
+        """
+        UPDATE Menus
+        SET status = %s
+        WHERE status = %s
+        AND DATEDIFF(CURRENT_DATE(), valid_date) > 0
+        """,
+        (cls.STATUS_ARCHIVED, cls.STATUS_PUBLISHED)
+    )
+    
+    # Return number of affected rows if available
+    return result.get('affected_rows', 0) if result else 0

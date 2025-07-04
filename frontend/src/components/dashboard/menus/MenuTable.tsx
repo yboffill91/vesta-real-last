@@ -15,7 +15,17 @@ import {
   SelectGroup,
 } from "@/components/ui/Select";
 import { SystemAlert } from "@/components/ui/system-alert";
-import { Pencil, Trash, Search, Archive, CheckCircle } from "lucide-react";
+import { Pencil, Trash, Search, Archive, CheckCircle, Copy } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Función para formatear fechas sin dependencias externas
 const formatDate = (dateString: string) => {
@@ -35,6 +45,7 @@ export const MenuTable = () => {
     deleteMenu,
     publishMenu,
     archiveMenu,
+    duplicateMenu,
     error,
   } = useMenus();
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -55,6 +66,12 @@ export const MenuTable = () => {
   const [showConfirmArchive, setShowConfirmArchive] = useState(false);
   const [archiving, setArchiving] = useState(false);
 
+  // Estados para duplicación de menú
+  const [duplicateId, setDuplicateId] = useState<number | null>(null);
+  const [showConfirmDuplicate, setShowConfirmDuplicate] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const [duplicateName, setDuplicateName] = useState<string>("");
+
   const router = useRouter();
 
   // Estado para filtros
@@ -65,9 +82,8 @@ export const MenuTable = () => {
 
   // Cargar menús al montar el componente
   useEffect(() => {
-    // @ts-ignore: Estamos usando la versión actualizada de fetchMenus que acepta el parámetro showAllMenus
-    fetchMenus(undefined, showAllMenus);
-  }, [fetchMenus, showAllMenus]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchMenus();
+  }, [fetchMenus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Actualizar filteredMenus cuando cambian los menús
   useEffect(() => {
@@ -141,7 +157,7 @@ export const MenuTable = () => {
           text: "Menú publicado exitosamente",
         });
         // @ts-ignore: Estamos usando la versión actualizada de fetchMenus
-        fetchMenus(undefined, showAllMenus);
+        fetchMenus();
       } else {
         setStatusUpdateMessage({
           type: "error",
@@ -186,7 +202,7 @@ export const MenuTable = () => {
           text: "Menú archivado exitosamente",
         });
         // @ts-ignore: Estamos usando la versión actualizada de fetchMenus
-        fetchMenus(undefined, showAllMenus);
+        fetchMenus();
       } else {
         setStatusUpdateMessage({
           type: "error",
@@ -207,6 +223,49 @@ export const MenuTable = () => {
 
       // Auto-ocultar el mensaje después de 5 segundos
       setTimeout(() => setStatusUpdateMessage(null), 5000);
+    }
+  };
+
+  // Preparar duplicación de menú
+  const prepareDuplicateMenu = (id: number, name: string) => {
+    setDuplicateId(id);
+    setDuplicateName(name + " (Copia)"); // Nombre predeterminado
+    setShowConfirmDuplicate(true);
+  };
+
+  // Confirmar duplicación de menú
+  const handleDuplicateConfirm = async () => {
+    if (!duplicateId) return;
+
+    setDuplicating(true);
+    setStatusUpdateMessage(null);
+    try {
+      const duplicatedMenu = await duplicateMenu(duplicateId, duplicateName);
+
+      if (duplicatedMenu) {
+        setStatusUpdateMessage({
+          type: "success",
+          text: "Menú duplicado con éxito",
+        });
+
+        // Actualizar la lista de menús
+        fetchMenus();
+      } else {
+        setStatusUpdateMessage({
+          type: "error",
+          text: "Error al duplicar el menú",
+        });
+      }
+    } catch (err: any) {
+      setStatusUpdateMessage({
+        type: "error",
+        text: err?.message || "Error al duplicar el menú",
+      });
+    } finally {
+      setDuplicating(false);
+      setShowConfirmDuplicate(false);
+      setDuplicateId(null);
+      setDuplicateName("");
     }
   };
 
@@ -252,7 +311,7 @@ export const MenuTable = () => {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
+              {/* <div className="flex items-center space-x-2">
                 <label className="text-sm font-medium cursor-pointer">
                   <input
                     type="checkbox"
@@ -262,7 +321,7 @@ export const MenuTable = () => {
                   />
                   Mostrar todos los menús (incluye borradores)
                 </label>
-              </div>
+              </div> */}
             </div>
           </label>
         </div>
@@ -323,6 +382,37 @@ export const MenuTable = () => {
         onConfirm={handleArchiveConfirm}
         onCancel={() => setShowConfirmArchive(false)}
       />
+
+      {/* Diálogo para duplicar menú */}
+      <AlertDialog open={showConfirmDuplicate} onOpenChange={setShowConfirmDuplicate}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Duplicar Menú</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se creará una copia del menú con todos sus productos. Ingresa un nombre para el nuevo menú.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="py-4">
+            <Input
+              value={duplicateName}
+              onChange={(e) => setDuplicateName(e.target.value)}
+              placeholder="Nombre del nuevo menú"
+              className="w-full"
+            />
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={duplicating}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDuplicateConfirm}
+              disabled={duplicating || !duplicateName.trim()}
+            >
+              {duplicating ? "Duplicando..." : "Duplicar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {loading && <div className="text-center py-4">Cargando menús...</div>}
 
@@ -454,6 +544,17 @@ export const MenuTable = () => {
                             <Pencil className="h-4 w-4" />
                           </Button>
                         )}
+
+                        {/* Botón duplicar (para todos los menús) */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => prepareDuplicateMenu(menu.id, menu.name)}
+                          title="Duplicar Menú"
+                          disabled={duplicating && duplicateId === menu.id}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
 
                         {/* Botón asignar productos */}
                         <Button

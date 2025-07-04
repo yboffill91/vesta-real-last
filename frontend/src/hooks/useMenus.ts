@@ -27,6 +27,7 @@ interface UseMenusReturn {
   publishMenu: (id: number) => Promise<boolean>;
   archiveMenu: (id: number) => Promise<boolean>;
   getMenuWithItems: (id: number) => Promise<(Menu & { items?: MenuItem[] }) | null>;
+  duplicateMenu: (id: number, newName?: string) => Promise<Menu | null>;
 }
 
 // Interfaces para las respuestas API para garantizar tipos seguros
@@ -453,6 +454,44 @@ export function useMenus(): UseMenusReturn {
     }
   }, []);
 
+  /**
+   * Duplica un menú existente con todos sus productos
+   * @param menuId ID del menú a duplicar
+   * @param newName Nombre opcional para el nuevo menú
+   * @returns El menú duplicado o null si hubo un error
+   */
+  const duplicateMenu = useCallback(async (menuId: number, newName?: string): Promise<Menu | null> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const freshToken = getAuthToken();
+      
+      // Si se proporciona un nuevo nombre, se envía en el cuerpo de la solicitud
+      const body = newName ? { name: newName } : undefined;
+      
+      const response = await fetchApi<ServerResponse<Menu>>(`/api/v1/menus/${menuId}/duplicate`, {
+        method: 'POST',
+        body,
+        token: freshToken,
+      });
+
+      if (response.success && response.data) {
+        // Actualizar el estado de los menús si es necesario
+        await fetchMenus(undefined, true); // Refrescar la lista de menús
+        return response.data.data;
+      }
+
+      setError(response.error || `Error al duplicar el menú con ID ${menuId}`);
+      return null;
+    } catch (err: any) {
+      const errorMessage = err?.message || `Error al duplicar el menú con ID ${menuId}`;
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchMenus]);
+
   return {
     menus,
     loading,
@@ -468,6 +507,7 @@ export function useMenus(): UseMenusReturn {
     assignToArea,
     publishMenu,
     archiveMenu,
-    getMenuWithItems
+    getMenuWithItems,
+    duplicateMenu
   };
 }

@@ -531,3 +531,89 @@ async def add_menu_item(
             "updated_at": item_data.get('updated_at')
         }
     }
+
+
+@router.post("/{menu_id}/duplicate", response_model=dict)
+async def duplicate_menu(
+    menu_id: int = Path(..., gt=0),
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Duplica un menú existente con todos sus productos y configuraciones.
+    Solo accesible para roles Soporte y Administrador.
+    
+    Args:
+        menu_id: El ID del menú a duplicar
+        
+    Returns:
+        dict: Mensaje de éxito con el menú duplicado
+    """
+    logger.info(f"User {current_user['username']} is duplicating menu {menu_id}")
+    
+    # Verificar que el menú existe
+    original_menu = Menu.get_with_items(menu_id)
+    if not original_menu:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Menú no encontrado"
+        )
+    
+    # Preparar datos para el nuevo menú (mañana como fecha de validez)
+    tomorrow = (date.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+    new_menu_data = {
+        "name": f"{original_menu['name']} (Copia)",
+        "valid_date": tomorrow,
+        "status": Menu.STATUS_DRAFT,
+        "created_by": current_user["id"]
+    }
+    
+    # Crear el nuevo menú
+    new_menu_id = Menu.create(new_menu_data)
+    if not new_menu_id:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo crear la copia del menú"
+        )
+    
+    # Copiar todos los productos del menú original al nuevo
+    items = original_menu.get("items", [])
+    if isinstance(items, str):
+        # Si items es una cadena JSON, intentar convertirla a lista
+        try:
+            import json
+            items = json.loads(items)
+        except Exception as e:
+            logger.error(f"Error parsing items JSON: {str(e)}")
+            items = []
+            
+    item_count = 0
+    for item in items:
+        if item and isinstance(item, dict):
+            product_id = item.get("product_id")
+            price = item.get("price")
+            is_available = item.get("is_available", True)
+            
+            if product_id and price:
+                success = Menu.add_item(
+                    menu_id=new_menu_id,
+                    product_id=product_id,
+                    price=price,
+                    is_available=is_available
+                )
+                if success:
+                    item_count += 1
+    
+    # Obtener las áreas de venta asignadas al menú original y asignarlas al nuevo
+    original_areas = Menu.get_assigned_sales_areas(menu_id)
+    area_ids = [area["id"] for area in original_areas] if original_areas else []
+    if area_ids:
+        Menu.assign_to_sales_areas(new_menu_id, area_ids)
+    
+    # Obtener el menú duplicado con todos sus detalles
+    new_menu = Menu.get_with_items(new_menu_id)
+    
+    return {
+        "status": "success",
+        "message": f"Menú duplicado correctamente con {item_count} productos",
+        "data": new_menu
+    }
