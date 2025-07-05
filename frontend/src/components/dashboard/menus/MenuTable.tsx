@@ -78,57 +78,75 @@ export const MenuTable = ({
   const [statusFilter, setStatusFilter] = useState<string>(
     typeof initialStatusFilter === "string" ? initialStatusFilter : "all"
   );
-  const [showAllMenus, setShowAllMenus] = useState<boolean>(true);
+  // Eliminamos el estado showAllMenus ya que no se está usando correctamente
   const [filteredMenus, setFilteredMenus] = useState<
     (Menu & { items?: { id: number }[] })[]
   >([]);
 
+  // Eliminado - Ya está incluido en el efecto principal
+
+  // Carga inicial de menús
   useEffect(() => {
     fetchMenus();
   }, [fetchMenus]);
 
+  // Efecto para cargar menús con items y aplicar filtros
   useEffect(() => {
     if (menus && Array.isArray(menus)) {
+      // Primero filtrar menús activos (no archivados)
       const activeMenus = menus.filter(
         (menu) => menu.status === "borrador" || menu.status === "publicada"
       );
 
+      // Luego cargar los items y aplicar filtros adicionales
       const loadMenuItems = async () => {
-        const menusWithItems = await Promise.all(
-          activeMenus.map(async (menu) => {
-            const menuWithItems = await getMenuWithItems(menu.id);
-            return menuWithItems || menu;
-          })
-        );
-        setFilteredMenus(menusWithItems);
+        try {
+          const menusWithItems = await Promise.all(
+            activeMenus.map(async (menu) => {
+              try {
+                const menuWithItems = await getMenuWithItems(menu.id);
+                return menuWithItems || menu;
+              } catch (error) {
+                console.error(
+                  `Error al cargar items para menú ${menu.id}:`,
+                  error
+                );
+                return menu;
+              }
+            })
+          );
+
+          // Aplicar filtros adicionales (búsqueda y estado)
+          let filtered = [...menusWithItems];
+
+          if (searchTerm.trim()) {
+            filtered = filtered.filter((menu) =>
+              menu.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          }
+
+          if (statusFilter !== "all") {
+            filtered = filtered.filter((menu) => menu.status === statusFilter);
+          }
+
+          setFilteredMenus(filtered);
+        } catch (error) {
+          console.error("Error al cargar items de menús:", error);
+        }
       };
 
       loadMenuItems();
+    } else {
+      setFilteredMenus([]);
     }
-  }, [menus, getMenuWithItems]);
+  }, [menus, getMenuWithItems, searchTerm, statusFilter]);
 
+  // Efecto para actualizar el filtro de estado cuando cambia initialStatusFilter
   useEffect(() => {
     if (typeof initialStatusFilter === "string") {
       setStatusFilter(initialStatusFilter);
     }
   }, [initialStatusFilter]);
-
-  useEffect(() => {
-    if (!menus.length) return;
-    let filtered = [...menus];
-
-    if (searchTerm.trim()) {
-      filtered = filtered.filter((menu) =>
-        menu.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((menu) => menu.status === statusFilter);
-    }
-
-    setFilteredMenus(filtered);
-  }, [searchTerm, statusFilter, menus]);
 
   const prepareDeleteMenu = (id: number) => {
     setDeleteId(id);
@@ -164,7 +182,8 @@ export const MenuTable = ({
       setPublishId(menu.id);
       setPublishing(true);
       await publishMenu(menu.id);
-      await fetchMenus(undefined, showAllMenus);
+      // Recargar menús después de la publicación
+      await fetchMenus();
       setStatusUpdateMessage({
         text: `El menú "${menu.name}" ha sido publicado con éxito.`,
         type: "success",
@@ -195,7 +214,7 @@ export const MenuTable = ({
           type: "success",
           text: "Menú archivado exitosamente",
         });
-        fetchMenus(undefined, showAllMenus);
+        fetchMenus();
       } else {
         throw new Error("Error al archivar");
       }
@@ -215,13 +234,13 @@ export const MenuTable = ({
   const getStatusBadgeClass = (status: MenuStatus) => {
     switch (status) {
       case "borrador":
-        return "bg-yellow-50 text-yellow-900";
+        return "text-yellow-500 italic bg-yellow-500/5 rounded-lg";
       case "publicada":
-        return "bg-secondary text-secondary-foreground";
+        return "bg-secondary/5 text-secondary italic rounded-lg";
       case "archivada":
-        return "bg-destructive text-destructive-foreground";
+        return "bg-destructive/5 text-destructive italic rounded-lg";
       default:
-        return "bg-primary text-primary-foreground";
+        return "bg-primary/5 text-primary italic rounded-lg";
     }
   };
 
@@ -297,123 +316,146 @@ export const MenuTable = ({
         </div>
       )}
 
-      {/* Tabla */}
-      <div className="rounded-md border">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-border">
-            <thead className="bg-primary/5">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Nombre
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-medium">
-                  Fecha de validez
-                </th>
+      {loading && <div className="text-center py-4">Cargando menús...</div>}
 
-                <th className="px-4 py-3 text-center text-sm font-medium">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredMenus.map((menu) => (
-                <tr key={menu.id} className="hover:bg-primary/5 ">
-                  <td className="px-4 py-3">
-                    <div className="font-medium">{menu.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {menu.description}
-                      <span
-                        className={` inline-block py-0.5 px-1 text-[0.6rem] ${getStatusBadgeClass(
-                          menu.status
-                        )}`}
-                      >
-                        {menu.status.charAt(0).toUpperCase() +
-                          menu.status.slice(1)}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {menu.valid_date ? (
-                      formatDate(menu.valid_date)
-                    ) : (
-                      <span className="text-muted-foreground">Sin fecha</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 flex justify-end items-center gap-2 ">
-                    {menu.status === "borrador" && (
-                      <>
+      {error && (
+        <div className="rounded-md bg-destructive/15 p-3 text-destructive mb-4">
+          Error: {error}
+        </div>
+      )}
+
+      {!loading && filteredMenus.length === 0 && (
+        <div className="flex justify-center items-center p-8 border rounded-md bg-muted/50">
+          <p className="text-muted-foreground">No hay menús disponibles</p>
+        </div>
+      )}
+
+      {/* Tabla - solo se muestra si hay menús */}
+      {!loading && filteredMenus.length > 0 && (
+        <div className="rounded-md border">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-primary/5">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-medium">
+                    Nombre
+                  </th>
+                  <th className="px-4 py-3 text-center text-sm font-medium">
+                    Fecha de validez
+                  </th>
+
+                  <th className="px-4 py-3 text-center text-sm font-medium">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filteredMenus.map((menu) => (
+                  <tr key={menu.id} className="hover:bg-primary/5 ">
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{menu.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {menu.description}
+                        <span
+                          className={` inline-block py-0.5 px-1 text-[0.6rem] ${getStatusBadgeClass(
+                            menu.status
+                          )}`}
+                        >
+                          {menu.status.charAt(0).toUpperCase() +
+                            menu.status.slice(1)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {menu.valid_date ? (
+                        formatDate(menu.valid_date)
+                      ) : (
+                        <span className="text-muted-foreground">Sin fecha</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 flex  items-center justify-end gap-2 ">
+                      {menu.status === "borrador" && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              router.push(`/dashboard/menus/edit/${menu.id}`)
+                            }
+                            title="Editar"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => prepareDeleteMenu(menu.id)}
+                            title="Eliminar"
+                            disabled={deleting && deleteId === menu.id}
+                          >
+                            {deleting && deleteId === menu.id ? (
+                              "Eliminando..."
+                            ) : (
+                              <Trash className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePublishMenu(menu)}
+                            disabled={
+                              publishing ||
+                              !menu.items ||
+                              menu.items.length === 0
+                            }
+                            title={
+                              !menu.items || menu.items.length === 0
+                                ? "No se puede publicar un menú sin productos"
+                                : "Publicar"
+                            }
+                          >
+                            {publishing && publishId === menu.id ? (
+                              "Publicando..."
+                            ) : (
+                              <CheckCircle className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </>
+                      )}
+                      {menu.status === "publicada" && (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handlePublishMenu(menu)}
-                          disabled={publishing}
-                          title="Publicar"
+                          onClick={() => prepareArchiveMenu(menu.id)}
+                          title="Archivar"
+                          disabled={archiving && archiveId === menu.id}
                         >
-                          {publishing && publishId === menu.id ? (
-                            "Publicando..."
+                          {archiving && archiveId === menu.id ? (
+                            "Archivando..."
                           ) : (
-                            <CheckCircle className="h-4 w-4" />
+                            <Archive className="h-4 w-4" />
                           )}
                         </Button>
+                      )}
+                      {menu.status !== "archivada" && (
                         <Button
-                          variant="outline"
                           size="sm"
                           onClick={() =>
-                            router.push(`/dashboard/menus/edit/${menu.id}`)
+                            router.push(`/dashboard/menus/${menu.id}/products`)
                           }
-                          title="Editar"
+                          title="Ver - Asignar Productos productos"
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Eye className="w-6 h-6" />
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => prepareDeleteMenu(menu.id)}
-                          title="Eliminar"
-                          disabled={deleting && deleteId === menu.id}
-                        >
-                          {deleting && deleteId === menu.id ? (
-                            "Eliminando..."
-                          ) : (
-                            <Trash className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </>
-                    )}
-                    {menu.status === "publicada" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => prepareArchiveMenu(menu.id)}
-                        title="Archivar"
-                        disabled={archiving && archiveId === menu.id}
-                      >
-                        {archiving && archiveId === menu.id ? (
-                          "Archivando..."
-                        ) : (
-                          <Archive className="h-4 w-4" />
-                        )}
-                      </Button>
-                    )}
-                    {menu.status !== "archivada" && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/dashboard/menus/${menu.id}/products`)
-                        }
-                        title="Ver - Asignar Productos productos"
-                      >
-                        <Eye className="w-6 h-6" />
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
