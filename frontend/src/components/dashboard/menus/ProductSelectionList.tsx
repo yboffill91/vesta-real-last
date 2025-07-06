@@ -41,10 +41,12 @@ export function ProductSelectionList({
     if (loading) return;
 
     let filtered = [...products];
-    
+
     // Excluir productos que ya están en la tabla de confirmación o en el menú
-    const alreadySelectedIds = alreadySelectedProducts.map(p => p.id);
-    filtered = filtered.filter(product => !alreadySelectedIds.includes(product.id));
+    const alreadySelectedIds = alreadySelectedProducts.map((p) => p.id);
+    filtered = filtered.filter(
+      (product) => !alreadySelectedIds.includes(product.id)
+    );
 
     // Filtrar por categoría
     if (selectedCategory && selectedCategory !== "all") {
@@ -88,7 +90,7 @@ export function ProductSelectionList({
   };
 
   return (
-    <div className="border rounded-md p-4 shadow-sm bg-card mb-4">
+    <div className="border rounded-md p-4  shadow-sm bg-card mb-4">
       <h3 className="text-lg font-medium mb-4">Productos disponibles</h3>
 
       <div className="mb-12 flex items-center justify-evenly w-full">

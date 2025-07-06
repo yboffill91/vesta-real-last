@@ -8,17 +8,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
 } from "@/components/ui";
-import {
-  ChevronsUpDown,
-  Sparkles,
-  BadgeCheck,
-  CreditCard,
-  Bell,
-  LogOut,
-  User,
-  Lock,
-  Edit3,
-} from "lucide-react";
+import { ChevronsUpDown, User, Edit3 } from "lucide-react";
 import React from "react";
 import {
   SidebarMenu,

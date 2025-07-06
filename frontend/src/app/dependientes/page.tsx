@@ -1,15 +1,28 @@
-import React from "react";
+"use client";
+import { useState } from "react";
+import { EntryMenuChecker } from "@/components/dependientes/EntryMenuChecker";
+import { ServiceSpotSelector } from "@/components/dependientes/ServiceSpotSelector";
 
-import { TableCardWrapper } from "@/components/dependientes/TableCardWrapper";
+export default function DependientesPage() {
+  const [step, setStep] = useState<'menu' | 'spots'>('menu');
+  const [selectedMenu, setSelectedMenu] = useState<any>(null);
 
-const DependientePage = () => {
-  // Por ahora, usamos areaId fijo (1). Se puede parametrizar luego.
-  return (
-    <div className="w-full flex flex-col gap-4 p-2">
-      <h2 className="text-xl font-bold mb-2">Mesas y Puestos de Servicio</h2>
-      <TableCardWrapper />
-    </div>
-  );
-};
+  // Paso 1: Validar menús publicados
+  if (step === 'menu') {
+    return (
+      <EntryMenuChecker
+        onSuccess={(menu) => {
+          setSelectedMenu(menu);
+          setStep('spots');
+        }}
+      />
+    );
+  }
 
-export default DependientePage;
+  // Paso 2: Selección de puestos
+  if (step === 'spots') {
+    return <ServiceSpotSelector onSelect={(spot) => {/* siguiente paso */}} />;
+  }
+
+  return null;
+}

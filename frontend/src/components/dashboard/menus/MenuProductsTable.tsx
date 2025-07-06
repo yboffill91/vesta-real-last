@@ -11,10 +11,10 @@ interface MenuProductsTableProps {
   onDelete: (itemId: number) => void;
 }
 
-export function MenuProductsTable({ 
-  menuItems, 
-  onUpdatePrice, 
-  onDelete 
+export function MenuProductsTable({
+  menuItems,
+  onUpdatePrice,
+  onDelete,
 }: MenuProductsTableProps) {
   // Estado para edición
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
@@ -71,7 +71,7 @@ export function MenuProductsTable({
 
   return (
     <div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto ">
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b bg-muted/50">
@@ -92,7 +92,7 @@ export function MenuProductsTable({
                 <td className="p-2 text-right">
                   {editingItemId === item.id ? (
                     <div className="flex items-center justify-end">
-                      <RootInput 
+                      <RootInput
                         id={`edit-item-price-${item.id}`}
                         htmlFor={`edit-item-price-${item.id}`}
                         label=""
@@ -103,18 +103,18 @@ export function MenuProductsTable({
                         value={editPrice}
                         onChange={(e) => setEditPrice(e.target.value)}
                       />
-                      <Button 
-                        size="sm" 
-                        variant="default" 
+                      <Button
+                        size="sm"
+                        variant="default"
                         className="mr-1"
                         disabled={loading}
                         onClick={() => handleSaveEdit(item.id)}
                       >
                         <Save size={14} />
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={handleCancelEdit}
                       >
                         <X size={14} />
@@ -125,17 +125,21 @@ export function MenuProductsTable({
                   )}
                 </td>
                 <td className="p-2 text-center">
-                  <span className={`px-2 py-1 rounded-full text-xs inline-block
-                    ${item.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  <span
+                    className={` text-xs inline-block
+                    ${
+                      item.is_available ? "text-secondary" : "text-destructive"
+                    }`}
+                  >
                     {item.is_available ? "Sí" : "No"}
                   </span>
                 </td>
                 <td className="p-2 text-right">
                   <div className="flex justify-end space-x-2">
                     {editingItemId !== item.id && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => handleStartEdit(item)}
                       >
                         <Edit2 size={14} />
@@ -157,12 +161,8 @@ export function MenuProductsTable({
       </div>
 
       {/* Mensajes de estado */}
-      {error && (
-        <div className="mt-3 text-destructive text-sm">{error}</div>
-      )}
-      {success && (
-        <div className="mt-3 text-green-600 text-sm">{success}</div>
-      )}
+      {error && <div className="mt-3 text-destructive text-sm">{error}</div>}
+      {success && <div className="mt-3 text-green-600 text-sm">{success}</div>}
     </div>
   );
 }

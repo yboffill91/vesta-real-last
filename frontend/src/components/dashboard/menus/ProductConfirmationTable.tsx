@@ -74,7 +74,7 @@ export function ProductConfirmationTable({
   }
 
   return (
-    <div className="border rounded-md p-4 shadow-sm bg-card mb-4">
+    <div className="border rounded-md p-4 shadow-sm bg-card mb-4 ">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium">
           Productos seleccionados ({pendingItems.length})

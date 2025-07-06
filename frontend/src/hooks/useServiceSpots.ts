@@ -2,7 +2,12 @@ import { useState, useCallback } from "react";
 import { fetchApi } from "@/lib/api";
 
 // Definir los posibles estados de un puesto de servicio según la especificación
-export type ServiceSpotStatus = "libre" | "pedido_abierto" | "cobrado";
+export type ServiceSpotStatus =
+  | "libre"
+  | "pedido_abierto"
+  | "cobrado"
+  | "ocupado"
+  | "reservado";
 
 export interface ServiceSpot {
   id: number;

@@ -141,20 +141,26 @@ export function MenuProductAssignment({ menu }: MenuProductAssignmentProps) {
       for (const item of pendingItems) {
         // Validar que el precio sea un número válido y mayor que 0
         // Reemplazar comas por puntos para manejo internacional
-        const sanitizedPrice = item.price.toString().replace(',', '.');
+        const sanitizedPrice = item.price.toString().replace(",", ".");
         const price = parseFloat(sanitizedPrice);
-        
+
         // Log detallado para depuración
         console.log(`Producto: ${item.product.name} (ID: ${item.product.id})`);
-        console.log(`  - Precio original: "${item.price}" (tipo: ${typeof item.price})`);
-        console.log(`  - Precio sanitizado: "${sanitizedPrice}" (tipo: ${typeof sanitizedPrice})`);
+        console.log(
+          `  - Precio original: "${item.price}" (tipo: ${typeof item.price})`
+        );
+        console.log(
+          `  - Precio sanitizado: "${sanitizedPrice}" (tipo: ${typeof sanitizedPrice})`
+        );
         console.log(`  - Precio parseado: ${price} (tipo: ${typeof price})`);
-        
+
         if (isNaN(price) || price <= 0) {
-          console.error(`Precio inválido para el producto ${item.product.name}: ${item.price}`);
+          console.error(
+            `Precio inválido para el producto ${item.product.name}: ${item.price}`
+          );
           continue; // Saltar este item
         }
-        
+
         // Crear objeto a enviar (incluir menu_id como requiere MenuItemBase en el backend)
         const itemData = {
           menu_id: menu.id, // ¡Incluido explícitamente! Requerido por el backend
@@ -162,17 +168,17 @@ export function MenuProductAssignment({ menu }: MenuProductAssignmentProps) {
           price: price, // Número, no string
           is_available: item.is_available,
         };
-        
-        console.log('Datos a enviar al endpoint:', itemData);
-        
+
+        console.log("Datos a enviar al endpoint:", itemData);
+
         // Variable para almacenar respuesta del backend
         let newItem = null;
-        
+
         try {
           newItem = await addMenuItem(menu.id, itemData);
-          console.log('Respuesta del endpoint:', newItem);
+          console.log("Respuesta del endpoint:", newItem);
         } catch (err) {
-          console.error('Error al agregar producto:', err);
+          console.error("Error al agregar producto:", err);
           // Seguimos con el siguiente producto
           continue;
         }
@@ -211,7 +217,9 @@ export function MenuProductAssignment({ menu }: MenuProductAssignmentProps) {
         setPendingItems([]);
         setSelectedProductIds([]);
       } else {
-        setAlertMessage("No se pudo agregar ningún producto al menú. Verifica que los precios sean válidos.");
+        setAlertMessage(
+          "No se pudo agregar ningún producto al menú. Verifica que los precios sean válidos."
+        );
         setShowErrorDialog(true);
       }
     } catch (err) {
@@ -241,10 +249,10 @@ export function MenuProductAssignment({ menu }: MenuProductAssignmentProps) {
   const handleUpdatePendingPrice = (index: number, newPrice: string) => {
     // Asegurar que solo se permitan valores numéricos y formatos válidos
     // Reemplazar comas por puntos para manejo internacional
-    const sanitizedPrice = newPrice.replace(',', '.');
-    
+    const sanitizedPrice = newPrice.replace(",", ".");
+
     // Verificar que sea un número válido
-    if (sanitizedPrice !== '' && !isNaN(Number(sanitizedPrice))) {
+    if (sanitizedPrice !== "" && !isNaN(Number(sanitizedPrice))) {
       const updatedItems = [...pendingItems];
       // Guardar como string pero asegurando que sea convertible a número
       updatedItems[index].price = sanitizedPrice;
@@ -317,11 +325,11 @@ export function MenuProductAssignment({ menu }: MenuProductAssignmentProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <Link href={`/dashboard/menus`}>
+    <div className="space-y-6 flex flex-col">
+      <Link href={`/dashboard/menus`} className="">
         <Button variant={"outline"}>
           <ArrowLeft />
-          Volver
+          Volver a Menús
         </Button>
       </Link>
       {/* Sección de selección de productos */}
@@ -356,7 +364,7 @@ export function MenuProductAssignment({ menu }: MenuProductAssignmentProps) {
       />
 
       {/* Sección de productos asignados al menú */}
-      <div className="border rounded-md p-4 shadow-sm bg-card">
+      <div className="border rounded-md p-4 shadow-sm bg-foreground/10">
         <h3 className="text-lg font-medium mb-4">Productos en el menú</h3>
         <MenuProductsTable
           menuItems={menuItems}
