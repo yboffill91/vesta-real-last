@@ -16,6 +16,12 @@ class OrderBase(BaseModel):
 class OrderCreate(OrderBase):
     """Schema for order creation"""
     created_by: int
+
+from app.schemas.order_item import OrderItemCreate
+from typing import List
+
+class OrderWithItemsCreate(OrderCreate):
+    items: List[OrderItemCreate] = []
     
 class OrderUpdate(BaseModel):
     """Schema for order update"""

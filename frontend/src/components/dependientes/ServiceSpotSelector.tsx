@@ -21,6 +21,7 @@ export function ServiceSpotSelector({
 }) {
   const { areas, loading, error } = useSalesAreas();
   const [selectedSpot, setSelectedSpot] = useState<any | null>(null);
+  const setMeta = require("@/store/orderStore").useOrderStore((state: any) => state.setMeta);
 
   if (loading) {
     return <div className="text-center py-8">Cargando áreas y puestos...</div>;
@@ -78,6 +79,8 @@ export function ServiceSpotSelector({
               {(() => {
                 const activeSpots =
                   area.service_spots?.filter((spot) => spot.is_active) || [];
+                // Al hacer click en un puesto, guarda los ids en el store
+
                 if (activeSpots.length === 0) {
                   return (
                     <div className="text-muted-foreground text-center w-full py-4">
@@ -86,31 +89,23 @@ export function ServiceSpotSelector({
                   );
                 }
                 return activeSpots.map((spot) => (
-                  <Button
-                    key={spot.id}
-                    variant={
-                      spot.status === "pedido_abierto"
-                        ? "secondary"
-                        : spot.status === "ocupado"
-                        ? "destructive"
-                        : spot.status === "reservado"
-                        ? "outline"
-                        : "default"
-                    }
-                    onClick={() => {
-                      if (spot.status === "libre") setSelectedSpot(spot);
-                    }}
-                    className="flex flex-col gap-2 min-h-24"
-                    disabled={spot.status !== "libre"}
-                  >
-                    <h3 className="font-bold text-lg">{spot.name}</h3>
-                    <span className="text-xs capitalize">
-                      {spot.status === "pedido_abierto"
-                        ? "Pedido abierto"
-                        : spot.status}
-                    </span>
-                  </Button>
-                ));
+  <Button
+    key={spot.id}
+    onClick={() => {
+      setSelectedSpot({ ...spot, sales_area_id: area.id });
+      setMeta({ service_spot_id: spot.id, sales_area_id: area.id });
+    }}
+    className="flex flex-col gap-2 min-h-24"
+    disabled={spot.status !== "libre"}
+  >
+    <h3 className="font-bold text-lg">{spot.name}</h3>
+    <span className="text-xs capitalize">
+      {spot.status === "pedido_abierto"
+        ? "Pedido abierto"
+        : spot.status}
+    </span>
+  </Button>
+));
               })()}
             </div>
           </CardContent>

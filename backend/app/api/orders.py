@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from app.utils.auth_middleware import require_dependiente, require_admin
 from app.schemas.order import (
     OrderCreate, OrderUpdate, OrderResponse, OrdersResponse,
-    OrderDetailResponse, OrderStatusUpdate
+    OrderDetailResponse, OrderStatusUpdate, OrderWithItemsCreate
 )
 from app.schemas.order_item import (
     OrderItemCreate, OrderItemUpdate, OrderItemResponse
@@ -126,7 +126,7 @@ async def get_orders(
 
 @router.post("/", response_model=OrderDetailResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(
-    order: OrderCreate,
+    order: OrderWithItemsCreate,
     current_user: dict = Depends(require_dependiente)
 ):
     """
@@ -164,6 +164,13 @@ async def create_order(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo crear la orden"
         )
+    
+    # Insert all items in batch if provided
+    items = getattr(order, "items", [])
+    for item in items:
+        item_dict = item.dict()
+        item_dict["order_id"] = new_order_id
+        OrderItem.create(item_dict)
     
     # Update service spot status
     ServiceSpot.update_status(order.service_spot_id, "pedido_abierto")
