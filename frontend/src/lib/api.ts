@@ -50,6 +50,12 @@ export async function fetchApi<T = any>(endpoint: string, options: FetchOptions 
     query = {},
     noToken = false
   } = options;
+
+  // Serializar body a JSON si es POST/PUT/PATCH y no es string
+  let finalBody = body;
+  if (['POST','PUT','PATCH'].includes(method) && body && typeof body !== 'string') {
+    finalBody = JSON.stringify(body);
+  }
   
   // Construir headers
   const headers: Record<string, string> = {
@@ -76,7 +82,7 @@ export async function fetchApi<T = any>(endpoint: string, options: FetchOptions 
   // Logger para depuración
   if (typeof window !== 'undefined') {
     // Solo log en cliente
-    console.log('[fetchApi] URL:', url, 'Method:', method, 'Body:', body);
+    console.log('[fetchApi] URL:', url, 'Method:', method, 'Body:', finalBody);
   }
 
   // Configuración de la petición
@@ -87,9 +93,7 @@ export async function fetchApi<T = any>(endpoint: string, options: FetchOptions 
   };
   
   // Agregar body si existe y no es GET
-  if (body && method !== 'GET') {
-    config.body = JSON.stringify(body);
-  }
+  config.body = method === 'GET' || method === 'HEAD' ? undefined : finalBody;
   
   try {
     const response = await fetch(url, config);

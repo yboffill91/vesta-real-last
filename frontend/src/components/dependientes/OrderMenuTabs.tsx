@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsTrigger } from "../ui/tabs";
 import { MenuProductTabs } from "./MenuProductTabs";
 import { useOrderStore } from "@/store/orderStore";
 import { OrderRectifyTable } from "./OrderRectifyTable";
+import { Order, OrderItem } from "@/models/order";
 
 export interface OrderMenuTabsProps {
   onSelectItem?: (item: any) => void;

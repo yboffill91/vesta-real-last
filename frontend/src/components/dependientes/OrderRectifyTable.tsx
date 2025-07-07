@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useOrderStore } from "@/store/orderStore";
+import { Order, OrderItem } from "@/models/order";
 import {
   Button,
   Table,

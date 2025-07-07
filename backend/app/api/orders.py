@@ -78,15 +78,18 @@ async def get_orders(
     
     # Get orders from database with pagination
     db_orders = Order.find_all(
-        where=where, 
-        date_filter=date_filter,
+        where=where,
         order_by="created_at DESC",
         limit=limit,
         offset=offset
     )
     
     # Get total count for pagination
-    total_count = Order.count(where=where, date_filter=date_filter)
+    # Safe fallback: if Order.count does not exist, use len(db_orders)
+    try:
+        total_count = Order.count(where=where)
+    except AttributeError:
+        total_count = len(db_orders)
     
     # Convert to response model
     orders = []
@@ -98,10 +101,12 @@ async def get_orders(
             OrderResponse(
                 id=order["id"],
                 service_spot_id=order["service_spot_id"],
+                sales_area_id=order.get("sales_area_id"),
+                menu_id=order.get("menu_id"),
                 status=order["status"],
-                total_amount=order["total_amount"],
-                tax_amount=order["tax_amount"],
-                created_by=order["created_by"],
+                total_amount=order.get("total_amount"),
+                tax_amount=order.get("tax_amount"),
+                created_by=order.get("created_by"),
                 items=order_items,
                 created_at=order.get("created_at"),
                 updated_at=order.get("updated_at"),
@@ -150,14 +155,20 @@ async def create_order(
             detail="Service spot not found"
         )
     
-    # Prepare order data
-    order_data = order.dict(exclude={"items"})
-    
-    # Add creator info
-    order_data["created_by"] = current_user["user_id"]
-    
-    # Create order in database
-    new_order_id = Order.create(order_data)
+    # Log avanzado: tipos y valores del payload recibido
+    def type_map(val):
+        if isinstance(val, list):
+            return [type_map(x) for x in val]
+        return {"type": type(val).__name__, "value": val}
+    logger.info(f"Payload recibido para crear orden: {type_map(order.dict())}")
+
+    # Crea la orden usando la lógica correcta que genera order_id
+    new_order_id = Order.create_order(
+        service_spot_id=order.service_spot_id,
+        sales_area_id=order.sales_area_id,
+        menu_id=order.menu_id,
+        created_by=current_user["user_id"]
+    )
     
     if not new_order_id:
         raise HTTPException(
@@ -170,6 +181,9 @@ async def create_order(
     for item in items:
         item_dict = item.dict()
         item_dict["order_id"] = new_order_id
+        # Calcula total_price si no viene en el payload
+        if not item_dict.get("total_price"):
+            item_dict["total_price"] = item_dict["quantity"] * item_dict["unit_price"]
         OrderItem.create(item_dict)
     
     # Update service spot status
@@ -246,10 +260,25 @@ async def get_order(
             detail="Order not found"
         )
     
+    # Decodifica items si es string
+    import json
+    from decimal import Decimal
+    if db_order.get("items") and isinstance(db_order["items"], str):
+        db_order["items"] = json.loads(db_order["items"])
+    else:
+        db_order["items"] = []
+
+    # Convierte Decimal a float
+    for k in ["total_amount", "tax_amount"]:
+        if isinstance(db_order.get(k), Decimal):
+            db_order[k] = float(db_order[k])
+
     # Convert to response model
     order_response = OrderResponse(
         id=db_order["id"],
         service_spot_id=db_order["service_spot_id"],
+        sales_area_id=db_order["sales_area_id"],
+        menu_id=db_order["menu_id"],
         status=db_order["status"],
         total_amount=db_order["total_amount"],
         tax_amount=db_order["tax_amount"],

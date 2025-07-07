@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
 import { fetchApi } from "@/lib/api";
+import { Order } from "@/models/order";
 
 export function useOrder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<Order | null>(null);
 
   const fetchOrder = useCallback(async (orderId: number | string) => {
     setLoading(true);

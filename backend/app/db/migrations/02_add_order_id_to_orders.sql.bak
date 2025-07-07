@@ -1,0 +1,6 @@
+-- 02_add_order_id_to_orders.sql
+
+ALTER TABLE Orders
+ADD COLUMN order_id VARCHAR(32) NOT NULL;
+
+CREATE UNIQUE INDEX uq_orders_order_id ON Orders(order_id);

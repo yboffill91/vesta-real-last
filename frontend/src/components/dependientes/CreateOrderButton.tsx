@@ -3,6 +3,7 @@ import { useAuthStore } from "@/lib/auth";
 import { fetchApi } from "@/lib/api";
 import { Button } from "../ui";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -12,11 +13,12 @@ import {
   AlertDialogAction,
 } from "../ui/alert-dialog";
 
-export const CreateOrderButton: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) => {
+export const CreateOrderButton: React.FC<{ onSuccess?: (orderId?: number) => void }> = ({ onSuccess }) => {
   const { products, meta, clear } = useOrderStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const handleCreateOrder = async () => {
     setLoading(true);
@@ -24,12 +26,15 @@ export const CreateOrderButton: React.FC<{ onSuccess?: () => void }> = ({ onSucc
     // Preparar payload para POST /api/v1/orders
     const items = products
       .filter((p) => !p.crossed && p.quantity > 0)
-      .map((p) => ({
-        product_id: p.product_id,
-        quantity: p.quantity,
-        unit_price: p.price,
-        notes: p.notes || undefined,
-      }));
+      .map((p) => {
+        const item: any = {
+          product_id: p.product_id,
+          quantity: p.quantity,
+          unit_price: p.price,
+        };
+        if (p.notes) item.note = p.notes;
+        return item;
+      });
     // Obtener el id del usuario autenticado desde el store Zustand
     const user = useAuthStore.getState().user;
     const created_by = user?.id ?? null;
@@ -63,7 +68,7 @@ export const CreateOrderButton: React.FC<{ onSuccess?: () => void }> = ({ onSucc
       // Log de depuración: payload real
       console.log("[Order API] Payload enviado:", payload, JSON.stringify(payload));
       // 1. Crear la orden
-      const res = await fetchApi("/api/v1/orders", {
+      const res = await fetchApi("/api/v1/orders/", {
         method: "POST",
         body: JSON.stringify(payload),
       });
@@ -73,9 +78,12 @@ export const CreateOrderButton: React.FC<{ onSuccess?: () => void }> = ({ onSucc
         method: "PATCH",
         body: JSON.stringify({ status: "pedido_abierto" }),
       });
+      // Extrae el id de la orden creada
+      const orderId = res.data?.id;
       clear();
-      setOpen(true);
-      if (onSuccess) onSuccess();
+      setOpen(false);
+      router.replace("/dependientes");
+      if (onSuccess) onSuccess(orderId);
     } catch (err: any) {
       setError(err.message || "Error inesperado");
     } finally {

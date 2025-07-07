@@ -6,15 +6,19 @@ from pydantic import BaseModel, Field
 from app.schemas.base import IDModel, TimeStampMixin, ResponseBase
 
 class OrderItemBase(BaseModel):
-    """Base schema for order item data"""
-    order_id: int
+    """Base schema for order item data (solo para respuesta, no para creación)"""
+    order_id: int  # Solo en respuesta, no en creación
     product_id: int
     quantity: int = Field(..., gt=0)
     unit_price: float = Field(..., gt=0)
     notes: Optional[str] = None
     
-class OrderItemCreate(OrderItemBase):
-    """Schema for order item creation"""
+class OrderItemCreate(BaseModel):
+    """Schema for order item creation (sin order_id, lo asigna el backend)"""
+    product_id: int
+    quantity: int = Field(..., gt=0)
+    unit_price: float = Field(..., gt=0)
+    notes: Optional[str] = None
     status: Optional[str] = "pendiente"
     total_price: Optional[float] = None  # Calculated field, optional in request
     

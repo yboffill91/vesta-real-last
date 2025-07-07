@@ -19,6 +19,30 @@ class Order(BaseModel):
     STATUS_CANCELED = 'cancelada'
     
     @classmethod
+    def generate_order_id(cls, sales_area_id: int, service_spot_id: int, created_by: int) -> str:
+        """
+        Generate a unique order_id with format yymmdd + area_id(2d) + spot_id(2d) + user_id(2d) + correlativo(4d)
+        """
+        now = datetime.now()
+        yymmdd = now.strftime("%y%m%d")
+        area = str(sales_area_id).zfill(2)
+        spot = str(service_spot_id).zfill(2)
+        user = str(created_by).zfill(2)
+        prefix = f"{yymmdd}{area}{spot}{user}"
+        query = f"""
+            SELECT order_id FROM {cls.table_name}
+            WHERE order_id LIKE %s
+            ORDER BY order_id DESC LIMIT 1
+        """
+        result = cls.execute_custom_query(query, (f"{prefix}%",))
+        if result and result[0]["order_id"]:
+            last_corr = int(result[0]["order_id"][-4:])
+            corr = str(last_corr + 1).zfill(4)
+        else:
+            corr = "0001"
+        return f"{prefix}{corr}"
+
+    @classmethod
     def create_order(cls, 
                      service_spot_id: int, 
                      sales_area_id: int, 
@@ -36,15 +60,17 @@ class Order(BaseModel):
         Returns:
             int: Order ID if successful, None otherwise
         """
-        # Create the order
+        # Generar order_id único siempre internamente
+        order_id_str = cls.generate_order_id(sales_area_id, service_spot_id, created_by)
         order_data = {
+            "order_id": order_id_str,
             "service_spot_id": service_spot_id,
             "sales_area_id": sales_area_id,
             "menu_id": menu_id,
             "status": cls.STATUS_OPEN,
             "created_by": created_by
         }
-        
+        # Nunca aceptar order_id como argumento externo ni del payload
         order_id = cls.create(order_data)
         
         if order_id:
@@ -53,7 +79,6 @@ class Order(BaseModel):
                 service_spot_id, 
                 ServiceSpot.STATUS_ORDER_OPEN
             )
-            
         return order_id
     
     @classmethod

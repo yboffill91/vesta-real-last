@@ -18,7 +18,9 @@ export function useSalesAreas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchAreas = () => {
+    setLoading(true);
+    setError(null);
     fetchApi("/api/v1/sales-areas/", { method: "GET" })
       .then((res) => {
         if (res.success && Array.isArray(res.data.data)) {
@@ -48,7 +50,11 @@ export function useSalesAreas() {
       })
       .catch(() => setError("Error de conexión con el servidor."))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchAreas();
   }, []);
 
-  return { areas, loading, error };
+  return { areas, loading, error, reload: fetchAreas };
 }

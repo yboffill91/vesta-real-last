@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { Order, OrderItem, OrderStatus } from "@/models/order";
 
 export interface OrderProduct {
   id: number;
