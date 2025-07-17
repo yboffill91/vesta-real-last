@@ -14,7 +14,7 @@ import {
 } from "../ui/alert-dialog";
 
 export const CreateOrderButton: React.FC<{ onSuccess?: (orderId?: number) => void }> = ({ onSuccess }) => {
-  const { products, meta, clear } = useOrderStore();
+  const { products, meta, clear, getTotalAmount } = useOrderStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -49,6 +49,7 @@ export const CreateOrderButton: React.FC<{ onSuccess?: (orderId?: number) => voi
       menu_id: meta.menu_id,
       created_by,
       items,
+      total_amount: getTotalAmount(),
     };
     try {
       // Log de depuración: esquema esperado

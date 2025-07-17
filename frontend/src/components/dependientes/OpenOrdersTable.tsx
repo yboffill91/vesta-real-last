@@ -24,6 +24,7 @@ export const OpenOrdersTable: React.FC = () => {
     return () => clearInterval(interval);
   }, [fetchOrders]);
 
+  // -disable-next-line @typescript-eslint/no-unsafe-assignment
   const orders: Order[] = Array.isArray(data?.data) ? data.data : [];
 
   return (

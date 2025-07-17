@@ -30,9 +30,17 @@ interface OrderState {
   crossProduct: (product_id: number) => void;
   uncrossProduct: (product_id: number) => void;
   clear: () => void;
+  getTotalAmount: () => number;
 }
 
 export const useOrderStore = create<OrderState>((set, get) => ({
+  getTotalAmount: () => {
+    const products = get().products;
+    // Solo sumar productos no tachados (crossed !== true)
+    return products
+      .filter((p) => !p.crossed)
+      .reduce((acc, p) => acc + (p.price * p.quantity), 0);
+  },
   products: [],
   meta: {
     sales_area_id: null,

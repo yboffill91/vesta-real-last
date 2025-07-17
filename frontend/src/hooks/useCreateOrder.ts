@@ -14,7 +14,7 @@ export function useCreateOrder() {
       console.log("[useCreateOrder] typeof order.created_by:", typeof order.created_by, order.created_by);
       const response = await fetchApi("/api/v1/orders/", {
         method: "POST",
-        body: order,
+        body: JSON.stringify(order),
         headers: { "Content-Type": "application/json" },
       });
       setData(response);

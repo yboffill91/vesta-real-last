@@ -22,13 +22,17 @@ export function useCreateOrderWithItems() {
   const [success, setSuccess] = useState<boolean>(false);
 
   // orderData: datos de orden (sin items), items: array de items (sin order_id)
-  const createOrderWithItems = async (orderData: any, items: any[]) => {
+  const createOrderWithItems = async (orderData: any, items: any[], totalAmount?: number) => {
     setLoading(true);
     setError(null);
     setSuccess(false);
     try {
       // 1. Crear la orden
-      const order = await createOrder(orderData);
+      const orderPayload = { ...orderData };
+      if (typeof totalAmount === "number") {
+        orderPayload.total_amount = totalAmount;
+      }
+      const order = await createOrder(orderPayload);
       const orderId = order.data?.id;
       if (!orderId) throw new Error("No se pudo obtener el ID de la orden");
       // 2. Agregar todos los items en paralelo
